@@ -1,0 +1,14 @@
+name = "kronus-app-ui"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "kronus_app_db"
+database_id = "a672ee7a-c345-42c3-8935-a095fa675873"
+
+[build]
+command = "npm run build"
+
+[env.production]
+workers_dev = true
