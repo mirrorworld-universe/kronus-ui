@@ -5,8 +5,14 @@ import { useForm, useField } from "vee-validate";
 import { object, string, custom, array, number } from "zod";
 import { toTypedSchema } from "@vee-validate/zod";
 import { PublicKey } from "@solana/web3.js";
+import { useWallet } from "solana-wallets-vue";
+import { types } from "@sqds/multisig";
+import { useWalletConnection } from "~/composables/useWalletConnection";
+import { useConnection } from "~/composables/useConnection";
 
 const { walletAddress } = useWalletConnection();
+const wallet = useWallet();
+const { connection } = useConnection();
 
 const items: StepperItem[] = [
   { value: "details", title: "Multisig Details", description: "Name and describe your Multisig" },
@@ -16,6 +22,8 @@ const items: StepperItem[] = [
 
 type StepperValue = (typeof items)[number]["value"];
 const activeStep = ref<StepperValue>("details");
+
+const toast = useToast();
 
 interface Member {
   address: string;
@@ -84,14 +92,65 @@ const { handleSubmit, errors, values } = useForm<FormValues>({
 
 const { value: name } = useField<string>("name");
 const { value: description } = useField<string>("description");
-const { value: members, validate } = useField<Member[]>("members");
+const { value: members } = useField<Member[]>("members");
 const { value: threshold } = useField<number>("threshold");
 
 const formErrors = computed(() => errors.value as FormErrors);
 
-const onSubmit = handleSubmit((formValues) => {
-  // Handle form submission
-  console.log("Form values:", formValues);
+const onSubmit = handleSubmit(async (formValues) => {
+  try {
+    // Example of using the connection
+    const latestBlockhash = await connection.value.getLatestBlockhash();
+    console.log("Latest blockhash:", latestBlockhash);
+
+    const { signature, multisigAddress } = await createMultisig(
+      wallet,
+      wallet.publicKey.value!,
+      wallet.publicKey.value!,
+      // No timelock
+      0,
+      values.members.map(mem => ({
+        key: new PublicKey(mem.address),
+        permissions: types.Permissions.all()
+      })),
+      values.threshold,
+      wallet.publicKey.value,
+      `Create multisig for ${wallet.publicKey.value?.toBase58()} at ${Date.now()}`
+    );
+
+    // Rest of your submission logic...
+    console.log("Form values:", formValues);
+
+    console.log("Created multisig at address", multisigAddress);
+    console.log("Hash", signature);
+
+    toast.add({
+      title: "Success!",
+      description: `Successfully created new multisig key ${multisigAddress}`,
+      actions: [{
+        icon: "i-lucide-eye",
+        label: "Copy",
+        color: "success",
+        variant: "outline",
+        onClick: (e) => {
+          e?.stopPropagation();
+          navigator.clipboard.writeText(multisigAddress);
+        }
+      },
+      {
+        icon: "i-lucide-link",
+        label: "View ",
+        color: "success",
+        variant: "soft",
+        onClick: (e) => {
+          e?.stopPropagation();
+          window.open(`https://explorer.sonic.game/tx/${signature}`);
+        }
+      }]
+    });
+  } catch (error) {
+    console.error("Error submitting form:", error);
+  }
 });
 
 function goToStep(step: StepperValue) {
@@ -137,6 +196,8 @@ const addMember = () => {
     members.value.push({ address: "", label: "" });
   }
 };
+
+const hasInvalidAddresses = computed(() => !!members.value.find(member => member.error));
 
 const emit = defineEmits(["cancel"]);
 </script>
@@ -315,7 +376,7 @@ const emit = defineEmits(["cancel"]);
                 <UButton variant="ghost" @click="goToStep('details')">
                   Back
                 </UButton>
-                <UButton type="submit" variant="solid">
+                <UButton :disabled="hasInvalidAddresses" variant="solid" @click="goToStep('review')">
                   Next
                 </UButton>
               </div>
@@ -330,18 +391,18 @@ const emit = defineEmits(["cancel"]);
               Review and confirm
             </h3>
             <div class="text-secondary-100">
-              One last look at the selected parameters before the Squad is deployed
+              One last look at the selected parameters before the Multisig is deployed
             </div>
           </div>
 
           <UCard variant="subtle" class="w-full">
             <template #header>
               <h3 class="font-medium text-xl">
-                Review your Squad
+                Review your Multisig
               </h3>
             </template>
 
-            <div class="space-y-8">
+            <div class="space-y-4">
               <!-- Squad Name -->
               <div class="flex items-center gap-4">
                 <UAvatar
@@ -353,48 +414,50 @@ const emit = defineEmits(["cancel"]);
               </div>
 
               <!-- Key Stats -->
-              <div class="grid grid-cols-3 gap-4">
-                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-3xl">{{ (values.members as Member[]).length }}</span>
-                    <UIcon name="i-lucide-users" class="text-xl" />
-                  </div>
-                  <div class="text-secondary-100">
-                    Members
-                  </div>
-                </div>
+              <div class="flex justify-center">
+                <div class="grid grid-cols-3 gap-4 w-fit">
+                  <UCard variant="soft" class="space-y-2 w-[200px]">
+                    <div class="flex items-center gap-2">
+                      <span class="text-3xl">{{ nonEmptyMembers }}</span>
+                      <UIcon name="i-lucide-users" class="text-xl" />
+                    </div>
+                    <div class="text-secondary-100">
+                      Members
+                    </div>
+                  </UCard>
 
-                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-3xl">{{ values.threshold }}/{{ (values.members as Member[]).length }}</span>
-                    <UIcon name="i-lucide-shield" class="text-xl" />
-                  </div>
-                  <div class="text-secondary-100">
-                    Threshold
-                  </div>
-                </div>
+                  <UCard variant="soft" class="space-y-2 w-[200px]">
+                    <div class="flex items-center gap-2">
+                      <span class="text-3xl">{{ threshold }}/{{ nonEmptyMembers }}</span>
+                      <UIcon name="i-lucide-shield" class="text-xl" />
+                    </div>
+                    <div class="text-secondary-100">
+                      Threshold
+                    </div>
+                  </UCard>
 
-                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
-                  <div class="flex items-center gap-2">
-                    <span class="text-3xl">~0.0530</span>
-                  </div>
-                  <div class="text-secondary-100">
-                    Deploy fee <UIcon name="i-lucide-info" class="inline-block" />
-                  </div>
+                  <UCard variant="soft" class="space-y-2 w-[200px]">
+                    <div class="flex items-center gap-2">
+                      <span class="text-3xl">~0.0530</span>
+                    </div>
+                    <div class="text-secondary-100 ">
+                      Deploy fee
+                    </div>
+                  </UCard>
                 </div>
               </div>
 
               <!-- Deploy Fee Info -->
               <UAlert
-                class="bg-transparent"
+                class="bg-transparent w-sm"
                 color="neutral"
                 variant="soft"
                 :ui="{
-                  description: 'text-secondary-100 text-sm'
+                  description: 'text-secondary-100 text-xs'
                 }"
               >
                 <template #description>
-                  This amount consists of 0.05 SOL one-time platform fee, 0.001 SOL which will be deposited into your Squads account and ~0.0020 SOL network rent needed for account deployment.
+                  This amount consists of 0.05 SOL one-time platform fee, 0.001 SOL which will be deposited into your Multisig account and ~0.0020 SOL network rent needed for account deployment.
                 </template>
               </UAlert>
             </div>

@@ -1,20 +1,23 @@
-import { Transaction, type Keypair, type PublicKey } from "@solana/web3.js";
+import { Keypair, Transaction, type PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 
 export async function createMultisig(
-  feePayer: PublicKey,
-  createKey: PublicKey,
+  wallet: WalletStore,
   creator: PublicKey,
   configAuthority: PublicKey | null,
   timeLock: number,
   members: multisig.types.Member[],
   threshold: number,
-  treasury: PublicKey,
   rentCollector: PublicKey | null,
   memo: string,
-  signers: Keypair[]
 ) {
   console.info("started createMultisig");
+
+  if (!wallet.publicKey.value || !wallet.connected) throw new Error("Wallet not connected.");
+
+  const createKeyPair = Keypair.generate();
+  const createKey = createKeyPair.publicKey;
+  const feePayer = wallet.publicKey.value;
 
   const [multisigPda] = multisig.getMultisigPda({
     createKey: createKey,
@@ -29,7 +32,7 @@ export async function createMultisig(
     timeLock: timeLock,
     members: members,
     threshold: threshold,
-    treasury: treasury,
+    treasury: PROGRAM_TREASURY_ACCOUNT,
     rentCollector: rentCollector,
     memo: memo,
     programId: SQUADS_V4_PROGRAM_ID,
@@ -37,19 +40,23 @@ export async function createMultisig(
 
   const tx: Transaction = new Transaction();
 
+  const connection = connectionManager.getCurrentConnection();
+
   const { blockhash } = await connection.getLatestBlockhash();
   tx.recentBlockhash = blockhash;
   tx.feePayer = feePayer;
 
   tx.add(multisigCreateV2Ix);
+  const signers = [createKeyPair];
 
   const signature = await signAndSendTransaction(
     connection,
+    wallet,
     signers,
     tx,
     ({ status }) => {
       if (status === "confirmed") {
-        console.success(
+        console.log(
           "Successfully Created Squad Multisig: ",
           multisigPda.toBase58()
         );
