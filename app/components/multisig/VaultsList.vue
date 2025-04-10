@@ -1,17 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from "vue";
-import type { Connection } from "@solana/web3.js";
+import { ref, onMounted } from "vue";
 import { PublicKey } from "@solana/web3.js";
-import { useConnection } from "@/composables/useConnection";
-import { listMultisigVaults, type VaultInfo } from "~/utils/multisig";
+import { listMultisigVaults } from "~/utils/multisig";
 
 const props = defineProps<{
   multisigAddress: string;
 }>();
 
-const { connection } = useConnection();
-const solanaConnection = computed(() => connection.value as Connection);
-const vaults = ref<VaultInfo[]>([]);
+// const { connection } = useConnection();
+// const solanaConnection = computed(() => connection.value as Connection);
+const vaults = ref<PublicKey[]>([]);
 const loading = ref(false);
 const error = ref<string | null>(null);
 
@@ -20,11 +18,19 @@ const fetchVaults = async () => {
   error.value = null;
   try {
     const multisigPk = new PublicKey(props.multisigAddress);
-    vaults.value = await listMultisigVaults(solanaConnection.value, multisigPk);
+    vaults.value = await listMultisigVaults(multisigPk);
   } catch (err) {
     error.value = err instanceof Error ? err.message : "Failed to fetch vaults";
   } finally {
     loading.value = false;
+  }
+};
+
+const copyToClipboard = async (text: string) => {
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (err) {
+    console.error("Failed to copy to clipboard:", err);
   }
 };
 
@@ -62,46 +68,37 @@ onMounted(() => {
     </div>
 
     <div v-else class="space-y-4">
-      <UCard v-for="vault in vaults" :key="vault.address.toString()" class="p-4">
+      <UCard v-for="vault in vaults" :key="vault.toString()" class="p-4">
         <div class="flex justify-between items-start">
           <div class="space-y-2">
             <div class="font-medium">
-              {{ vault.name || 'Unnamed Vault' }}
+              Vault
             </div>
             <div class="text-sm text-secondary-100 font-mono">
-              {{ vault.address.toString() }}
+              {{ vault.toString() }}
             </div>
           </div>
           <UButton
             color="neutral"
             variant="ghost"
             icon="i-lucide-copy"
-            @click="async () => {
-              try {
-                if (typeof window !== 'undefined') {
-                  await window.navigator.clipboard.writeText(vault.address.toString());
-                }
-              }
-              catch (err) {
-                console.error('Failed to copy to clipboard:', err);
-              }
-            }"
+            @click="copyToClipboard(vault.toString())"
           />
         </div>
         <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
           <div>
             <div class="text-secondary-100">
-              Creator
+              Address
             </div>
             <div class="font-mono">
-              {{ vault.creator.toString().slice(0, 8) }}...
+              {{ vault.toString().slice(0, 8) }}...
             </div>
           </div>
           <div>
             <div class="text-secondary-100">
               Created
             </div>
-            <div>{{ new Date(vault.createTime * 1000).toLocaleDateString() }}</div>
+            <div>Unknown</div>
           </div>
         </div>
       </UCard>

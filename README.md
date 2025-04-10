@@ -1,41 +1,37 @@
-# Nuxt Dashboard Template with Nuxt UI Pro
+# Kronus - Open Source Multisig Client
 
-Get started with the Nuxt 3 dashboard template with multiple pages, collapsible sidebar, keyboard shortcuts, light & dark more, command palette and more, powered by the [Nuxt UI Pro](https://ui.nuxt.com/getting-started/installation/pro/nuxt) UI Library.
+Kronus is an open-source alternative to Squads.so, providing a comprehensive front-end client for multisig operations across Solana and other SVMs/alt-chains.
 
-[Live Demo](https://dashboard-template.nuxt.dev)
+## Features
 
-<a href="https://dashboard-template.nuxt.dev" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/57f6d964-a76c-4662-96b2-17622fb18d40">
-    <source media="(prefers-color-scheme: light)" srcset="https://github.com/user-attachments/assets/c4c87f77-d10a-4731-9b7c-0cd0ff4821d7">
-    <img alt="Vue Dashboard with Nuxt UI Pro" src="https://github.com/user-attachments/assets/c4c87f77-d10a-4731-9b7c-0cd0ff4821d7">
-  </picture>
-</a>
+- **Cross-Chain Support**: Manage multisig wallets on Solana and other compatible chains
+- **Comprehensive Interface**: Create, manage, and execute multisig transactions
+- **Permissionless**: Open-source and free to use
+- **Modern UI**: Built with Nuxt 3 for a fast, responsive experience
 
-## Vue Dashboard Template
+## About Kronus
 
-The dashboard template for Vue is on https://github.com/nuxt-ui-pro/dashboard-vue
+While Squads.so provides an excellent service, Kronus aims to offer:
 
-## Quick Start
+- A completely open-source solution
+- Support for multiple blockchain networks
+- Enhanced customization options
+- Self-hosted deployment options
+- Additional features for specialized use cases
 
-```bash [Terminal]
-npx nuxi@latest init -t github:nuxt-ui-pro/dashboard
-```
+## Supported Chains
+
+- Sonic SVM (primary)
+- Solana
+- Future integrations planned for:
+  - Solana Virtual Machine (SVM) compatible chains
+  - Other alt-chains with compatible multisig protocols
 
 ## Setup
 
-Make sure to install the dependencies:
+Make sure to install dependencies:
 
 ```bash
-# npm
-npm install
-
-# pnpm
-pnpm install
-
-# yarn
-yarn install
-
 # bun
 bun install
 ```
@@ -45,14 +41,6 @@ bun install
 Start the development server on `http://localhost:3000`:
 
 ```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
 
 # bun
 bun run dev
@@ -63,14 +51,6 @@ bun run dev
 Build the application for production:
 
 ```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
 
 # bun
 bun run build
@@ -79,21 +59,9 @@ bun run build
 Locally preview production build:
 
 ```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
 
 # bun
 bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
-
-## Renovate integration
-
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.

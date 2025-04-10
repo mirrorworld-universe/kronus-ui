@@ -11,43 +11,46 @@ const links = [[{
   onSelect: () => {
     open.value = false;
   }
-}, {
-  label: "Transactions",
-  icon: "i-lucide-zap",
-  to: "/inbox",
-  badge: "4",
-  onSelect: () => {
-    open.value = false;
-  }
 },
-{
-  label: "Treasury",
-  icon: "i-lucide-wallet-cards",
-  to: "/settings/notifications",
-  onSelect: () => {
-    open.value = false;
-  }
-}, {
-  label: "Members",
-  to: "/settings/members",
-  icon: "i-lucide-users",
-  onSelect: () => {
-    open.value = false;
-  }
-}, {
-  label: "Settings",
-  to: "/settings",
-  icon: "i-lucide-settings",
-  defaultOpen: true,
-  children: [{
-    label: "General",
-    to: "/settings",
-    exact: true,
-    onSelect: () => {
-      open.value = false;
-    }
-  }]
-}], [{
+  // {
+  //   label: "Transactions",
+  //   icon: "i-lucide-zap",
+  //   to: "/inbox",
+  //   badge: "4",
+  //   onSelect: () => {
+  //     open.value = false;
+  //   }
+  // },
+  // {
+  //   label: "Treasury",
+  //   icon: "i-lucide-wallet-cards",
+  //   to: "/settings/notifications",
+  //   onSelect: () => {
+  //     open.value = false;
+  //   }
+  // }, {
+  //   label: "Members",
+  //   to: "/settings/members",
+  //   icon: "i-lucide-users",
+  //   onSelect: () => {
+  //     open.value = false;
+  //   }
+  // }, {
+  //   label: "Settings",
+  //   to: "/settings",
+  //   icon: "i-lucide-settings",
+  //   defaultOpen: true,
+  //   children: [{
+  //     label: "General",
+  //     to: "/settings",
+  //     exact: true,
+  //     onSelect: () => {
+  //       open.value = false;
+  //     }
+  //   }]
+  // }
+
+], [{
   label: "Feedback",
   icon: "i-lucide-message-circle",
   to: "https://github.com/nuxt-ui-pro/dashboard",

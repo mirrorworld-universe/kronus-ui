@@ -19,16 +19,13 @@ useHead({
 
 const title = "Kronus UI - Sonic SVM's Multi-sig client for Squads v4";
 const description
-  = "Nuxt UI Pro is a collection of premium Vue components built on top of Nuxt UI to create beautiful & responsive Nuxt applications in minutes.";
+  = "Kronus is an open-source alternative to Squads.so, providing a comprehensive front-end client for multisig operations across Solana and other SVMs/alt-chains.";
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: "https://dashboard-template.nuxt.dev/social-card.png",
-  twitterImage: "https://dashboard-template.nuxt.dev/social-card.png",
-  twitterCard: "summary_large_image"
 });
 </script>
 

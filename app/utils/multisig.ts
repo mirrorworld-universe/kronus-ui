@@ -1,4 +1,4 @@
-import type { Connection, PublicKey } from "@solana/web3.js";
+import type { PublicKey } from "@solana/web3.js";
 import { Keypair, Transaction } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 
@@ -80,15 +80,20 @@ export interface VaultInfo {
 }
 
 export async function listMultisigVaults(
-  connection: Connection,
   multisigAddress: PublicKey
-): Promise<VaultInfo[]> {
+) {
   try {
-    const [vaults] = await multisig.getVaultPda({
-      index: 0,
-      multisigPda: multisigAddress,
-      programId: SQUADS_V4_PROGRAM_ID
+    const vaultIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    const vaultIndexPromises = vaultIndices.map((index) => {
+      const [vaultPublicKey] = multisig.getVaultPda({
+        index: index,
+        multisigPda: multisigAddress,
+        programId: SQUADS_V4_PROGRAM_ID,
+      });
+      return vaultPublicKey;
     });
+    const vaults = await Promise.all(vaultIndexPromises);
+    return vaults;
   } catch (error) {
     console.error("Error fetching multisig vaults:", error);
     throw error;

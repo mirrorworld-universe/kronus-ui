@@ -90,15 +90,18 @@ const { handleSubmit, errors, values } = useForm<FormValues>({
   }
 });
 
+const router = useRouter();
+
 const { value: name } = useField<string>("name");
 const { value: description } = useField<string>("description");
 const { value: members } = useField<Member[]>("members");
 const { value: threshold } = useField<number>("threshold");
 
 const formErrors = computed(() => errors.value as FormErrors);
-
+const isLoading = ref(false);
 const onSubmit = handleSubmit(async (formValues) => {
   try {
+    isLoading.value = true;
     // Example of using the connection
     const latestBlockhash = await connection.value.getLatestBlockhash();
     console.log("Latest blockhash:", latestBlockhash);
@@ -129,12 +132,13 @@ const onSubmit = handleSubmit(async (formValues) => {
       description: `Successfully created new multisig key ${multisigAddress}`,
       actions: [{
         icon: "i-lucide-eye",
-        label: "Copy",
+        label: "Go to vault",
         color: "success",
         variant: "outline",
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigAddress);
+          router.push(`/accounts/${multisigAddress}`);
         }
       },
       {
@@ -150,6 +154,8 @@ const onSubmit = handleSubmit(async (formValues) => {
     });
   } catch (error) {
     console.error("Error submitting form:", error);
+  } finally {
+    isLoading.value = false;
   }
 });
 
@@ -467,7 +473,7 @@ const emit = defineEmits(["cancel"]);
                 <UButton variant="ghost" @click="goToStep('members')">
                   Back
                 </UButton>
-                <UButton type="submit" variant="solid">
+                <UButton type="submit" variant="solid" :loading="isLoading">
                   Confirm
                 </UButton>
               </div>

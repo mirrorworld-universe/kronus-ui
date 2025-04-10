@@ -1,5 +1,12 @@
 <script setup lang="ts">
-import CreateMultisig from "~/components/home/CreateMultisig.vue";
+import { useWallet } from "solana-wallets-vue";
+import VaultsList from "~/components/multisig/VaultsList.vue";
+
+const wallet = useWallet();
+
+const route = useRoute();
+
+const multisigAddress = computed(() => route.params.multisig as string);
 </script>
 
 <template>
@@ -17,7 +24,10 @@ import CreateMultisig from "~/components/home/CreateMultisig.vue";
     </template>
 
     <template #body>
-      <CreateMultisig />
+      <VaultsList v-if="wallet.connected.value" :multisig-address="multisigAddress" />
+      <UCard v-else>
+        Please connect your wallet to continue.
+      </UCard>
     </template>
   </UDashboardPanel>
 </template>

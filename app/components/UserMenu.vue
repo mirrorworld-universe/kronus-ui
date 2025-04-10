@@ -12,10 +12,10 @@ const colors = ["red", "orange", "amber", "yellow", "lime", "green", "emerald", 
 const neutrals = ["slate", "gray", "zinc", "neutral", "stone"];
 
 const user = ref({
-  name: "Benjamin Canac",
+  name: "Settings",
   avatar: {
-    src: "https://github.com/benjamincanac.png",
-    alt: "Benjamin Canac"
+    src: "https://github.com/mirrorworld-universe.png",
+    alt: "Kronus UI"
   }
 });
 
@@ -26,9 +26,6 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
 }], [{
   label: "Profile",
   icon: "i-lucide-user"
-}, {
-  label: "Billing",
-  icon: "i-lucide-credit-card"
 }, {
   label: "Settings",
   icon: "i-lucide-settings",
@@ -104,45 +101,6 @@ const items = computed<DropdownMenuItem[][]>(() => ([[{
       e.preventDefault();
     }
   }]
-}], [{
-  label: "Templates",
-  icon: "i-lucide-layout-template",
-  children: [{
-    label: "Starter",
-    to: "https://ui-pro-starter.nuxt.dev/"
-  }, {
-    label: "Landing",
-    to: "https://landing-template.nuxt.dev/"
-  }, {
-    label: "Docs",
-    to: "https://docs-template.nuxt.dev/"
-  }, {
-    label: "SaaS",
-    to: "https://saas-template.nuxt.dev/"
-  }, {
-    label: "Dashboard",
-    to: "https://dashboard-template.nuxt.dev/",
-    checked: true,
-    type: "checkbox"
-  }]
-}], [{
-  label: "Documentation",
-  icon: "i-lucide-book-open",
-  to: "https://ui.nuxt.com/getting-started/installation/pro/nuxt",
-  target: "_blank"
-}, {
-  label: "GitHub repository",
-  icon: "i-simple-icons-github",
-  to: "https://github.com/nuxt-ui-pro/dashboard",
-  target: "_blank"
-}, {
-  label: "Upgrade to Pro",
-  icon: "i-lucide-rocket",
-  to: "https://ui.nuxt.com/pro/purchase",
-  target: "_blank"
-}], [{
-  label: "Log out",
-  icon: "i-lucide-log-out"
 }]]));
 </script>
 
