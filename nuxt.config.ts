@@ -26,6 +26,9 @@ export default defineNuxtConfig({
   future: {
     compatibilityVersion: 4
   },
+  experimental: {
+    clientNodeCompat: true
+  },
 
   compatibilityDate: "2024-07-11",
 
@@ -60,5 +63,5 @@ export default defineNuxtConfig({
   },
   uiPro: {
     license: process.env.UI_PRO_LICENSE_KEY
-  }
+  },
 });
