@@ -1,15 +1,15 @@
-import { sub } from 'date-fns'
+import { sub } from "date-fns";
 
 const mails = [{
   id: 1,
   from: {
-    name: 'Alex Smith',
-    email: 'alex.smith@example.com',
+    name: "Alex Smith",
+    email: "alex.smith@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=1'
+      src: "https://i.pravatar.cc/128?u=1"
     }
   },
-  subject: 'Meeting Schedule: Q1 Marketing Strategy Review',
+  subject: "Meeting Schedule: Q1 Marketing Strategy Review",
   body: `Dear Team,
 
 I hope this email finds you well. Just a quick reminder about our Q1 Marketing Strategy meeting scheduled for tomorrow at 10 AM EST in Conference Room A.
@@ -31,13 +31,13 @@ Tel: (555) 123-4567`,
   id: 2,
   unread: true,
   from: {
-    name: 'Jordan Brown',
-    email: 'jordan.brown@example.com',
+    name: "Jordan Brown",
+    email: "jordan.brown@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=2'
+      src: "https://i.pravatar.cc/128?u=2"
     }
   },
-  subject: 'RE: Project Phoenix - Sprint 3 Update',
+  subject: "RE: Project Phoenix - Sprint 3 Update",
   body: `Hi team,
 
 Quick update on Sprint 3 deliverables:
@@ -65,13 +65,13 @@ Mobile: +1 (555) 234-5678`,
   id: 3,
   unread: true,
   from: {
-    name: 'Taylor Green',
-    email: 'taylor.green@example.com',
+    name: "Taylor Green",
+    email: "taylor.green@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=3'
+      src: "https://i.pravatar.cc/128?u=3"
     }
   },
-  subject: 'Lunch Plans',
+  subject: "Lunch Plans",
   body: `Hi there!
 
 I was wondering if you'd like to grab lunch this Friday? There's this amazing new Mexican restaurant downtown called "La Casa" that I've been wanting to try. They're known for their authentic tacos and house-made guacamole.
@@ -86,13 +86,13 @@ Taylor`,
 }, {
   id: 4,
   from: {
-    name: 'Morgan White',
-    email: 'morgan.white@example.com',
+    name: "Morgan White",
+    email: "morgan.white@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=4'
+      src: "https://i.pravatar.cc/128?u=4"
     }
   },
-  subject: 'New Proposal: Project Horizon',
+  subject: "New Proposal: Project Horizon",
   body: `Hi team,
 
 I've just uploaded the comprehensive proposal for Project Horizon to our shared drive. The document includes:
@@ -116,10 +116,10 @@ Tel: (555) 234-5678`,
 }, {
   id: 5,
   from: {
-    name: 'Casey Gray',
-    email: 'casey.gray@example.com'
+    name: "Casey Gray",
+    email: "casey.gray@example.com"
   },
-  subject: 'Updated: San Francisco Conference Trip Itinerary',
+  subject: "Updated: San Francisco Conference Trip Itinerary",
   body: `Dear [Name],
 
 Please find your confirmed travel itinerary below:
@@ -151,10 +151,10 @@ Office: (555) 345-6789`,
 }, {
   id: 6,
   from: {
-    name: 'Jamie Johnson',
-    email: 'jamie.johnson@example.com'
+    name: "Jamie Johnson",
+    email: "jamie.johnson@example.com"
   },
-  subject: 'Q1 2024 Financial Performance Review',
+  subject: "Q1 2024 Financial Performance Review",
   body: `Dear Leadership Team,
 
 Please find attached our Q1 2024 financial analysis report. Key highlights:
@@ -179,13 +179,13 @@ Ext: 4567`,
 }, {
   id: 7,
   from: {
-    name: 'Riley Davis',
-    email: 'riley.davis@example.com',
+    name: "Riley Davis",
+    email: "riley.davis@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=7'
+      src: "https://i.pravatar.cc/128?u=7"
     }
   },
-  subject: '[Mandatory] New DevOps Tools Training Session',
+  subject: "[Mandatory] New DevOps Tools Training Session",
   body: `Hello Development Team,
 
 This is a reminder about next week's mandatory training session on our updated DevOps toolkit.
@@ -218,13 +218,13 @@ M: (555) 777-8888`,
   id: 8,
   unread: true,
   from: {
-    name: 'Kelly Wilson',
-    email: 'kelly.wilson@example.com',
+    name: "Kelly Wilson",
+    email: "kelly.wilson@example.com",
     avatar: {
-      src: 'https://i.pravatar.cc/128?u=8'
+      src: "https://i.pravatar.cc/128?u=8"
     }
   },
-  subject: '🎉 Happy Birthday!',
+  subject: "🎉 Happy Birthday!",
   body: `Dear [Name],
 
 On behalf of the entire team, wishing you a fantastic birthday! 🎂
@@ -247,10 +247,10 @@ Tel: (555) 999-0000`,
 }, {
   id: 9,
   from: {
-    name: 'Drew Moore',
-    email: 'drew.moore@example.com'
+    name: "Drew Moore",
+    email: "drew.moore@example.com"
   },
-  subject: 'Website Redesign Feedback Request - Phase 2',
+  subject: "Website Redesign Feedback Request - Phase 2",
   body: `Hi there,
 
 We're entering Phase 2 of our website redesign project and would value your input on the latest iterations.
@@ -282,10 +282,10 @@ Product Design Team`,
 }, {
   id: 10,
   from: {
-    name: 'Jordan Taylor',
-    email: 'jordan.taylor@example.com'
+    name: "Jordan Taylor",
+    email: "jordan.taylor@example.com"
   },
-  subject: 'Corporate Wellness Program - Membership Renewal',
+  subject: "Corporate Wellness Program - Membership Renewal",
   body: `Dear Valued Member,
 
 Your corporate wellness program membership is due for renewal on April 1st, 2024.
@@ -316,10 +316,10 @@ Tel: (555) 123-7890`,
   id: 11,
   unread: true,
   from: {
-    name: 'Morgan Anderson',
-    email: 'morgan.anderson@example.com'
+    name: "Morgan Anderson",
+    email: "morgan.anderson@example.com"
   },
-  subject: 'Important: Updates to Your Corporate Insurance Policy',
+  subject: "Important: Updates to Your Corporate Insurance Policy",
   body: `Dear [Employee Name],
 
 This email contains important information about changes to your corporate insurance coverage effective April 1, 2024.
@@ -353,10 +353,10 @@ HR Department`,
 }, {
   id: 12,
   from: {
-    name: 'Casey Thomas',
-    email: 'casey.thomas@example.com'
+    name: "Casey Thomas",
+    email: "casey.thomas@example.com"
   },
-  subject: '📚 March Book Club Meeting: "The Great Gatsby"',
+  subject: "📚 March Book Club Meeting: \"The Great Gatsby\"",
   body: `Hello Book Lovers!
 
 I hope you're enjoying F. Scott Fitzgerald's masterpiece! Our next meeting details:
@@ -388,10 +388,10 @@ Internal Culture Committee`,
 }, {
   id: 13,
   from: {
-    name: 'Jamie Jackson',
-    email: 'jamie.jackson@example.com'
+    name: "Jamie Jackson",
+    email: "jamie.jackson@example.com"
   },
-  subject: '🍳 Company Cookbook Project - Recipe Submission Reminder',
+  subject: "🍳 Company Cookbook Project - Recipe Submission Reminder",
   body: `Dear Colleagues,
 
 Final call for our company cookbook project submissions!
@@ -423,10 +423,10 @@ Ext. 5432`,
 }, {
   id: 14,
   from: {
-    name: 'Riley White',
-    email: 'riley.white@example.com'
+    name: "Riley White",
+    email: "riley.white@example.com"
   },
-  subject: '🧘‍♀️ Updated Corporate Wellness Schedule - Spring 2024',
+  subject: "🧘‍♀️ Updated Corporate Wellness Schedule - Spring 2024",
   body: `Dear Wellness Program Participants,
 
 Our Spring 2024 wellness schedule is now available!
@@ -458,10 +458,10 @@ Wellness & Benefits Team`,
 }, {
   id: 15,
   from: {
-    name: 'Kelly Harris',
-    email: 'kelly.harris@example.com'
+    name: "Kelly Harris",
+    email: "kelly.harris@example.com"
   },
-  subject: '📚 Book Launch Event: "Digital Transformation in the Modern Age"',
+  subject: "📚 Book Launch Event: \"Digital Transformation in the Modern Age\"",
   body: `Dear [Name],
 
 You're cordially invited to the launch of my new book, "Digital Transformation in the Modern Age: A Leadership Guide"
@@ -494,10 +494,10 @@ Author, "Digital Transformation in the Modern Age"`,
 }, {
   id: 16,
   from: {
-    name: 'Drew Martin',
-    email: 'drew.martin@example.com'
+    name: "Drew Martin",
+    email: "drew.martin@example.com"
   },
-  subject: '🚀 TechCon 2024: Early Bird Registration Now Open',
+  subject: "🚀 TechCon 2024: Early Bird Registration Now Open",
   body: `Dear Tech Enthusiasts,
 
 Registration is now open for TechCon 2024: "Innovation at Scale"
@@ -532,10 +532,10 @@ TechCon 2024`,
 }, {
   id: 17,
   from: {
-    name: 'Alex Thompson',
-    email: 'alex.thompson@example.com'
+    name: "Alex Thompson",
+    email: "alex.thompson@example.com"
   },
-  subject: '🎨 Modern Perspectives: Contemporary Art Exhibition',
+  subject: "🎨 Modern Perspectives: Contemporary Art Exhibition",
   body: `Hi there,
 
 Hope you're well! I wanted to personally invite you to an extraordinary art exhibition this weekend.
@@ -567,10 +567,10 @@ Tel: (555) 234-5678`,
 }, {
   id: 18,
   from: {
-    name: 'Jordan Garcia',
-    email: 'jordan.garcia@example.com'
+    name: "Jordan Garcia",
+    email: "jordan.garcia@example.com"
   },
-  subject: '🤝 Industry Networking Event: "Connect & Innovate 2024"',
+  subject: "🤝 Industry Networking Event: \"Connect & Innovate 2024\"",
   body: `Dear Professional Network,
 
 You're invited to our premier networking event!
@@ -604,10 +604,10 @@ Professional Networking Association`,
 }, {
   id: 19,
   from: {
-    name: 'Taylor Rodriguez',
-    email: 'taylor.rodriguez@example.com'
+    name: "Taylor Rodriguez",
+    email: "taylor.rodriguez@example.com"
   },
-  subject: '🌟 Community Service Day - Volunteer Opportunities',
+  subject: "🌟 Community Service Day - Volunteer Opportunities",
   body: `Dear Colleagues,
 
 Join us for our annual Community Service Day!
@@ -649,10 +649,10 @@ Corporate Social Responsibility Team`,
 }, {
   id: 20,
   from: {
-    name: 'Morgan Lopez',
-    email: 'morgan.lopez@example.com'
+    name: "Morgan Lopez",
+    email: "morgan.lopez@example.com"
   },
-  subject: '🚗 Vehicle Maintenance Reminder: 30,000 Mile Service',
+  subject: "🚗 Vehicle Maintenance Reminder: 30,000 Mile Service",
   body: `Dear Valued Customer,
 
 Your vehicle is due for its 30,000-mile maintenance service.
@@ -684,8 +684,8 @@ Service Coordinator
 Downtown Auto Care
 Emergency: (555) 987-6544`,
   date: sub(new Date(), { months: 2 }).toISOString()
-}]
+}];
 
 export default eventHandler(async () => {
-  return mails
-})
+  return mails;
+});

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { sub } from "date-fns";
+import CreateMultisig from "~/components/home/CreateMultisig.vue";
 import type { Period, Range } from "~/types";
 
 // const { isNotificationsSlideoverOpen } = useDashboard();
@@ -22,9 +23,9 @@ const period = ref<Period>("daily");
 </script>
 
 <template>
-  <UDashboardPanel id="home">
+  <UDashboardPanel id="create">
     <template #header>
-      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Create New Multisig" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -50,21 +51,10 @@ const period = ref<Period>("daily");
           <WalletConnectButton />
         </template>
       </UDashboardNavbar>
-
-      <UDashboardToolbar>
-        <template #left>
-          <!-- NOTE: The `-ms-1` class is used to align with the `DashboardSidebarCollapse` button here. -->
-          <HomeDateRangePicker v-model="range" class="-ms-1" />
-
-          <HomePeriodSelect v-model="period" :range="range" />
-        </template>
-      </UDashboardToolbar>
     </template>
 
     <template #body>
-      <HomeStats :period="period" :range="range" />
-      <HomeChart :period="period" :range="range" />
-      <HomeSales :period="period" :range="range" />
+      <CreateMultisig />
     </template>
   </UDashboardPanel>
 </template>

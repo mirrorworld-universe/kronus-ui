@@ -1,6 +1,7 @@
-import type { PublicKey } from "@solana/web3.js";
+import { Transaction, type Keypair, type PublicKey } from "@solana/web3.js";
+import * as multisig from "@sqds/multisig";
 
-async function createMultisig(
+export async function createMultisig(
   feePayer: PublicKey,
   createKey: PublicKey,
   creator: PublicKey,
@@ -13,7 +14,7 @@ async function createMultisig(
   memo: string,
   signers: Keypair[]
 ) {
-  logger.info("started createMultisig");
+  console.info("started createMultisig");
 
   const [multisigPda] = multisig.getMultisigPda({
     createKey: createKey,
@@ -48,11 +49,11 @@ async function createMultisig(
     tx,
     ({ status }) => {
       if (status === "confirmed") {
-        logger.success(
+        console.success(
           "Successfully Created Squad Multisig: ",
           multisigPda.toBase58()
         );
-        logger.info("Write this address down, you will need it later.");
+        console.info("Write this address down, you will need it later.");
       }
     }
   );

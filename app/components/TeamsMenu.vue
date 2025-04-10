@@ -1,43 +1,43 @@
 <script setup lang="ts">
 defineProps<{
-  collapsed?: boolean
-}>()
+  collapsed?: boolean;
+}>();
 
 const teams = ref([{
-  label: 'Nuxt',
+  label: "Nuxt",
   avatar: {
-    src: 'https://github.com/nuxt.png',
-    alt: 'Nuxt'
+    src: "https://github.com/nuxt.png",
+    alt: "Nuxt"
   }
 }, {
-  label: 'NuxtHub',
+  label: "NuxtHub",
   avatar: {
-    src: 'https://github.com/nuxt-hub.png',
-    alt: 'NuxtHub'
+    src: "https://github.com/nuxt-hub.png",
+    alt: "NuxtHub"
   }
 }, {
-  label: 'NuxtLabs',
+  label: "NuxtLabs",
   avatar: {
-    src: 'https://github.com/nuxtlabs.png',
-    alt: 'NuxtLabs'
+    src: "https://github.com/nuxtlabs.png",
+    alt: "NuxtLabs"
   }
-}])
-const selectedTeam = ref(teams.value[0])
+}]);
+const selectedTeam = ref(teams.value[0]);
 
 const items = computed(() => {
   return [teams.value.map(team => ({
     ...team,
     onSelect() {
-      selectedTeam.value = team
+      selectedTeam.value = team;
     }
   })), [{
-    label: 'Create team',
-    icon: 'i-lucide-circle-plus'
+    label: "Create team",
+    icon: "i-lucide-circle-plus"
   }, {
-    label: 'Manage teams',
-    icon: 'i-lucide-cog'
-  }]]
-})
+    label: "Manage teams",
+    icon: "i-lucide-cog"
+  }]];
+});
 </script>
 
 <template>

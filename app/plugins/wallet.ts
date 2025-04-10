@@ -7,7 +7,7 @@ const walletOptions = {
     new BackpackWalletAdapter(),
     new NightlyWalletAdapter(),
   ],
-  autoConnect: false,
+  autoConnect: true,
 };
 
 export default defineNuxtPlugin((nuxtApp) => {

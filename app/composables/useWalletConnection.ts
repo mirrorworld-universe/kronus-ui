@@ -53,6 +53,7 @@ export const useWalletConnection = () => {
   };
 
   const copyAddress = () => {
+    console.log("walletAddress", walletAddress.value);
     if (walletAddress.value) {
       navigator.clipboard.writeText(walletAddress.value);
     }

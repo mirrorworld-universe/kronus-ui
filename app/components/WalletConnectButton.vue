@@ -22,17 +22,17 @@ const dropdownItems = [[
   {
     label: "Copy address",
     icon: "i-heroicons-clipboard",
-    click: copyAddress
+    onSelect: copyAddress
   },
   {
     label: "Change wallet",
     icon: "i-heroicons-arrows-right-left",
-    click: openModal
+    onSelect: openModal
   },
   {
     label: "Disconnect",
     icon: "i-heroicons-power",
-    click: disconnectWallet
+    onSelect: disconnectWallet
   }
 ]];
 </script>
@@ -55,11 +55,7 @@ const dropdownItems = [[
       v-else
       :items="dropdownItems"
     >
-      <UButton color="primary">
-        <UIcon
-          name="i-heroicons-wallet"
-          class="mr-2"
-        />
+      <UButton icon="i-heroicons-wallet" color="primary" variant="outline">
         {{ truncatedAddress }}
       </UButton>
     </UDropdownMenu>

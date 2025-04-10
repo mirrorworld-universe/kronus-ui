@@ -7,6 +7,7 @@ const { isModalOpen, closeModal, availableWallets, connectWallet } = useWalletCo
 <template>
   <UModal
     v-model:open="isModalOpen"
+    description="Connect your wallet to get started with Kronus"
   >
     <template #content>
       <div class="p-6">
