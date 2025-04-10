@@ -20,6 +20,7 @@ const activeStep = ref<StepperValue>("details");
 interface Member {
   address: string;
   label?: string;
+  error?: string;
 }
 
 interface FormValues {
@@ -83,7 +84,7 @@ const { handleSubmit, errors, values } = useForm<FormValues>({
 
 const { value: name } = useField<string>("name");
 const { value: description } = useField<string>("description");
-const { value: members } = useField<Member[]>("members");
+const { value: members, validate } = useField<Member[]>("members");
 const { value: threshold } = useField<number>("threshold");
 
 const formErrors = computed(() => errors.value as FormErrors);
@@ -101,15 +102,17 @@ function goToStep(step: StepperValue) {
   //   activeStep.value = step;
   // }
 }
+const validMembers = computed(() => members.value.filter(member => member.address.trim() !== "" && !isSolanaPublicKey.safeParse(member.address.trim()).error));
+const validDedupedMembers = computed(() => new Set([...validMembers.value]));
+const nonEmptyMembers = computed(() => validDedupedMembers.value.size);
 
-const nonEmptyMembers = computed(() => members.value.filter(member => member.address.trim() !== "").length);
-
-const updateMemberField = (index: number, field: keyof Member, value: string | number) => {
+const updateMemberField = async (index: number, field: keyof Member, value: string | number) => {
   if (members.value) {
     const newValue = field === "address" ? String(value) : value;
     members.value[index] = {
       ...members.value[index],
-      [field]: newValue
+      [field]: newValue,
+      error: field === "address" && String(value).trim() !== "" ? isSolanaPublicKey.safeParse(newValue).error ? "Invalid Solana public key" : undefined : undefined
     } as Member;
   }
 };
@@ -225,38 +228,44 @@ const emit = defineEmits(["cancel"]);
             </template>
 
             <div class="space-y-4">
-              <div v-for="(member, index) in members" :key="index" class="w-full flex justify-start items-center gap-4">
-                <UInput
-                  :name="`members.${index}.address`"
-                  :model-value="members[index]?.address || ''"
-                  placeholder="Enter wallet address"
-                  variant="soft"
-                  class="w-full"
-                  :disabled="members[index]?.address === walletAddress"
-                  @update:model-value="value => updateMemberField(index, 'address', value)"
-                >
-                  <template v-if="formErrors?.members?.[index]?.address" #help>
-                    <span class="text-red-500">{{ formErrors.members[index]?.address }}</span>
-                  </template>
+              <div v-for="(member, index) in members" :key="index" class="w-full flex flex-col gap-2">
+                <div class="flex justify-start items-start gap-4">
+                  <div class="flex-1 flex flex-col gap-1">
+                    <UFormField :id="`members.${index}.label`" :error="members[index]?.error">
+                      <UInput
+                        :name="`members.${index}.address`"
+                        :model-value="members[index]?.address || ''"
+                        placeholder="Enter wallet address"
+                        variant="soft"
+                        :ui="{
+                          base: formErrors?.members?.[index]?.address ? 'relative border-red-500 dark:border-red-500' : 'relative'
+                        }"
+                        class="w-full"
+                        :disabled="members[index]?.address === walletAddress"
+                        @update:model-value="value => updateMemberField(index, 'address', value)"
+                      >
+                        <template v-if="members[index]?.address !== walletAddress" #trailing>
+                          <UButton
+                            color="neutral"
+                            variant="link"
+                            size="sm"
+                            icon="i-lucide-trash"
+                            aria-label="Clear input"
+                            @click="removeMember(index)"
+                          />
+                        </template>
+                      </UInput>
+                    </UFormField>
+                  </div>
 
-                  <template v-if="members[index]?.address !== walletAddress" #trailing>
-                    <UButton
-                      color="neutral"
-                      variant="link"
-                      size="sm"
-                      icon="i-lucide-trash"
-                      aria-label="Clear input"
-                      @click="removeMember(index)"
-                    />
-                  </template>
-                </UInput>
-                <UInput
-                  :name="`members.${index}.label`"
-                  :model-value="members[index]?.label || ''"
-                  placeholder="Optional label"
-                  variant="soft"
-                  @update:model-value="value => updateMemberField(index, 'label', value)"
-                />
+                  <UInput
+                    :name="`members.${index}.label`"
+                    :model-value="members[index]?.label || ''"
+                    placeholder="Optional label"
+                    variant="soft"
+                    @update:model-value="value => updateMemberField(index, 'label', value)"
+                  />
+                </div>
               </div>
 
               <UButton variant="ghost" icon="i-heroicons-plus" @click="addMember">
