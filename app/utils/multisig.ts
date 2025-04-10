@@ -1,4 +1,5 @@
-import { Keypair, Transaction, type PublicKey } from "@solana/web3.js";
+import type { Connection, PublicKey } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 
 export async function createMultisig(
@@ -68,4 +69,28 @@ export async function createMultisig(
     signature,
     multisigAddress: multisigPda.toBase58(),
   };
+}
+
+export interface VaultInfo {
+  address: PublicKey;
+  authority: PublicKey;
+  createTime: number;
+  creator: PublicKey;
+  name: string;
+}
+
+export async function listMultisigVaults(
+  connection: Connection,
+  multisigAddress: PublicKey
+): Promise<VaultInfo[]> {
+  try {
+    const [vaults] = await multisig.getVaultPda({
+      index: 0,
+      multisigPda: multisigAddress,
+      programId: SQUADS_V4_PROGRAM_ID
+    });
+  } catch (error) {
+    console.error("Error fetching multisig vaults:", error);
+    throw error;
+  }
 }
