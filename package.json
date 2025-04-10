@@ -30,6 +30,7 @@
     "@vee-validate/zod": "^4.15.0",
     "@vueuse/nuxt": "^13.0.0",
     "bs58": "^6.0.0",
+    "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.29.3",
     "nuxt": "^3.16.2",
