@@ -2,7 +2,7 @@
 import { ref, computed } from "vue";
 import type { StepperItem } from "@nuxt/ui";
 import { useForm, useField } from "vee-validate";
-import { object, string, custom, array } from "zod";
+import { object, string, custom, array, number } from "zod";
 import { toTypedSchema } from "@vee-validate/zod";
 import { PublicKey } from "@solana/web3.js";
 
@@ -64,9 +64,9 @@ const multisigSchema = object({
   }))
     .min(1, "At least one member is required")
     .max(10, "Maximum 10 members allowed"),
-  threshold: string()
+  threshold: number()
     .refine((val) => {
-      const num = parseInt(val);
+      const num = parseInt(String(val));
       return !isNaN(num) && num > 0;
     }, "Threshold must be a positive number")
 });
@@ -101,6 +101,8 @@ function goToStep(step: StepperValue) {
   //   activeStep.value = step;
   // }
 }
+
+const nonEmptyMembers = computed(() => members.value.filter(member => member.address.trim() !== "").length);
 
 const updateMemberField = (index: number, field: keyof Member, value: string | number) => {
   if (members.value) {
@@ -137,7 +139,7 @@ const emit = defineEmits(["cancel"]);
 </script>
 
 <template>
-  <form class="flex flex-col gap-8 h-full px-4 py-8 justify-start items-center sm:gap-12" @submit.prevent="onSubmit">
+  <form class="flex flex-col gap-8 h-full px-4 pt-8 pb-16 justify-start items-center sm:gap-12" @submit.prevent="onSubmit">
     <UStepper
       v-model="activeStep"
       :items="items"
@@ -204,149 +206,202 @@ const emit = defineEmits(["cancel"]);
         </div>
 
         <!-- Members -->
-        <UCard v-if="item.value === 'members'" variant="subtle">
-          <template #header>
+
+        <div v-if="item.value === 'members'" class="w-full flex flex-col items-center justify-center space-y-6 pt-4">
+          <div class="max-w-2/3 flex flex-col justify-center items-center space-y-4 text-center">
             <h3 class="font-semibold text-3xl">
               And Members and configure your multisig security
             </h3>
             <div class="text-secondary-100">
               Add your team members and set threshold
             </div>
-          </template>
-
-          <div class="space-y-4">
-            <div v-for="(member, index) in members" :key="index" class="w-full flex justify-start items-center gap-4">
-              <UInput
-                :name="`members.${index}.address`"
-                :model-value="members[index]?.address || ''"
-                placeholder="Enter wallet address"
-                variant="soft"
-                class="w-full"
-                :disabled="members[index]?.address === walletAddress"
-                @update:model-value="value => updateMemberField(index, 'address', value)"
-              >
-                <template v-if="formErrors?.members?.[index]?.address" #help>
-                  <span class="text-red-500">{{ formErrors.members[index]?.address }}</span>
-                </template>
-
-                <template v-if="members[index]?.address !== walletAddress" #trailing>
-                  <UButton
-                    color="neutral"
-                    variant="link"
-                    size="sm"
-                    icon="i-lucide-trash"
-                    aria-label="Clear input"
-                    @click="removeMember(index)"
-                  />
-                </template>
-              </UInput>
-              <UInput
-                :name="`members.${index}.label`"
-                :model-value="members[index]?.label || ''"
-                placeholder="Optional label"
-                variant="soft"
-                @update:model-value="value => updateMemberField(index, 'label', value)"
-              />
-            </div>
-
-            <UButton variant="ghost" icon="i-heroicons-plus" @click="addMember">
-              Add Member
-            </UButton>
-
-            <UAlert
-              class="bg-transparent w-full px-0"
-              :ui="{
-                description: 'text-xs'
-              }"
-              color="warning"
-              variant="soft"
-              description="Only add wallets that you fully control. Do not add CEX addresses, as they can't be used to sign transactions."
-              icon="i-lucide-info"
-            />
           </div>
-
-          <div class="flex flex-col gap-4">
-            <div class="flex flex-col gap-2">
-              <h3 class="text-base font-medium">
-                Set confirmation threshold
+          <div />
+          <UCard variant="subtle">
+            <template #header>
+              <h3 class="font-medium text-lg">
+                Add initial multisig members
               </h3>
-              <div class="text-secondary-50 text-xs">
-                Number of confirmations required ({{ threshold }} out of {{ (values.members as Member[]).length }})
+            </template>
+
+            <div class="space-y-4">
+              <div v-for="(member, index) in members" :key="index" class="w-full flex justify-start items-center gap-4">
+                <UInput
+                  :name="`members.${index}.address`"
+                  :model-value="members[index]?.address || ''"
+                  placeholder="Enter wallet address"
+                  variant="soft"
+                  class="w-full"
+                  :disabled="members[index]?.address === walletAddress"
+                  @update:model-value="value => updateMemberField(index, 'address', value)"
+                >
+                  <template v-if="formErrors?.members?.[index]?.address" #help>
+                    <span class="text-red-500">{{ formErrors.members[index]?.address }}</span>
+                  </template>
+
+                  <template v-if="members[index]?.address !== walletAddress" #trailing>
+                    <UButton
+                      color="neutral"
+                      variant="link"
+                      size="sm"
+                      icon="i-lucide-trash"
+                      aria-label="Clear input"
+                      @click="removeMember(index)"
+                    />
+                  </template>
+                </UInput>
+                <UInput
+                  :name="`members.${index}.label`"
+                  :model-value="members[index]?.label || ''"
+                  placeholder="Optional label"
+                  variant="soft"
+                  @update:model-value="value => updateMemberField(index, 'label', value)"
+                />
               </div>
-            </div>
-            <div />
-            <UFormField class="w-full flex flex-col">
-              <USlider
-                v-model="threshold"
-                :min="1"
-                :max="(values.members as Member[]).length"
-                :default-value="1"
-                size="xs"
+
+              <UButton variant="ghost" icon="i-heroicons-plus" @click="addMember">
+                Add Member
+              </UButton>
+
+              <UAlert
+                class="bg-transparent w-full px-0"
+                :ui="{
+                  description: 'text-xs'
+                }"
+                color="warning"
+                variant="soft"
+                description="Only add wallets that you fully control. Do not add CEX addresses, as they can't be used to sign transactions."
+                icon="i-lucide-info"
               />
-              <div class="flex justify-between items-center mt-2">
-                <div v-for="(_, index) in members" :key="`${index}-count`" class="text-sm">
-                  {{ index + 1 }}
+            </div>
+
+            <div class="flex flex-col gap-4">
+              <div class="flex flex-col gap-2">
+                <h3 class="text-base font-medium">
+                  Set confirmation threshold
+                </h3>
+                <div class="text-secondary-50 text-xs">
+                  Number of confirmations required ({{ threshold }} out of {{ nonEmptyMembers }})
                 </div>
               </div>
-            </UFormField>
-          </div>
-
-          <template #footer>
-            <div class="flex justify-between">
-              <UButton variant="ghost" @click="goToStep('details')">
-                Back
-              </UButton>
-              <UButton type="submit" variant="solid">
-                Next
-              </UButton>
+              <div />
+              <UFormField class="w-full flex flex-col">
+                <USlider
+                  v-model="threshold"
+                  :min="1"
+                  :max="nonEmptyMembers"
+                  :default-value="1"
+                  size="xs"
+                />
+                <div class="flex justify-between items-center mt-2">
+                  <div v-for="(_, index) in nonEmptyMembers" :key="`${index}-count`" class="text-sm">
+                    {{ index + 1 }}
+                  </div>
+                </div>
+              </UFormField>
             </div>
-          </template>
-        </UCard>
+
+            <template #footer>
+              <div class="flex justify-between">
+                <UButton variant="ghost" @click="goToStep('details')">
+                  Back
+                </UButton>
+                <UButton type="submit" variant="solid">
+                  Next
+                </UButton>
+              </div>
+            </template>
+          </UCard>
+        </div>
 
         <!-- Review -->
-        <UCard v-if="item.value === 'review'" variant="subtle">
-          <template #header>
-            <h3 class="font-medium text-lg">
-              Review
+        <div v-if="item.value === 'review'" class="w-full flex flex-col items-center justify-center space-y-8 pt-4">
+          <div class="max-w-1/2 flex flex-col justify-center items-center space-y-4 text-center">
+            <h3 class="font-semibold text-3xl">
+              Review and confirm
             </h3>
-          </template>
-
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <h4 class="font-medium">
-                Details
-              </h4>
-              <p>Name: {{ values.name }}</p>
-              <p v-if="values.description">
-                Description: {{ values.description }}
-              </p>
-
-              <h4 class="font-medium mt-4">
-                Members
-              </h4>
-              <div v-for="(member, index) in (values.members as Member[])" :key="index" class="flex justify-between">
-                <span>{{ member.label || `Member ${index + 1}` }}</span>
-                <span class="font-mono">{{ member.address }}</span>
-              </div>
-
-              <h4 class="font-medium mt-4">
-                Threshold
-              </h4>
-              <p>Required signatures: {{ values.threshold }} of {{ values.members.length }}</p>
+            <div class="text-secondary-100">
+              One last look at the selected parameters before the Squad is deployed
             </div>
           </div>
 
-          <template #footer>
-            <div class="flex justify-between">
-              <UButton variant="ghost" @click="goToStep('members')">
-                Back
-              </UButton>
-              <UButton type="submit" variant="solid">
-                Create Multisig
-              </UButton>
+          <UCard variant="subtle" class="w-full">
+            <template #header>
+              <h3 class="font-medium text-xl">
+                Review your Squad
+              </h3>
+            </template>
+
+            <div class="space-y-8">
+              <!-- Squad Name -->
+              <div class="flex items-center gap-4">
+                <UAvatar
+                  class="bg-gray-900"
+                  size="lg"
+                  icon="i-lucide-users"
+                />
+                <span class="text-2xl">{{ values.name }}</span>
+              </div>
+
+              <!-- Key Stats -->
+              <div class="grid grid-cols-3 gap-4">
+                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-3xl">{{ (values.members as Member[]).length }}</span>
+                    <UIcon name="i-lucide-users" class="text-xl" />
+                  </div>
+                  <div class="text-secondary-100">
+                    Members
+                  </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-3xl">{{ values.threshold }}/{{ (values.members as Member[]).length }}</span>
+                    <UIcon name="i-lucide-shield" class="text-xl" />
+                  </div>
+                  <div class="text-secondary-100">
+                    Threshold
+                  </div>
+                </div>
+
+                <div class="bg-gray-900 rounded-lg p-4 space-y-2">
+                  <div class="flex items-center gap-2">
+                    <span class="text-3xl">~0.0530</span>
+                  </div>
+                  <div class="text-secondary-100">
+                    Deploy fee <UIcon name="i-lucide-info" class="inline-block" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Deploy Fee Info -->
+              <UAlert
+                class="bg-transparent"
+                color="neutral"
+                variant="soft"
+                :ui="{
+                  description: 'text-secondary-100 text-sm'
+                }"
+              >
+                <template #description>
+                  This amount consists of 0.05 SOL one-time platform fee, 0.001 SOL which will be deposited into your Squads account and ~0.0020 SOL network rent needed for account deployment.
+                </template>
+              </UAlert>
             </div>
-          </template>
-        </UCard>
+
+            <template #footer>
+              <div class="flex justify-between">
+                <UButton variant="ghost" @click="goToStep('members')">
+                  Back
+                </UButton>
+                <UButton type="submit" variant="solid">
+                  Confirm
+                </UButton>
+              </div>
+            </template>
+          </UCard>
+        </div>
       </template>
     </UStepper>
   </form>
