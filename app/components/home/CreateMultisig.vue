@@ -137,7 +137,7 @@ const emit = defineEmits(["cancel"]);
 </script>
 
 <template>
-  <form class="flex flex-col gap-8 h-full justify-center items-center sm:gap-12" @submit.prevent="onSubmit">
+  <form class="flex flex-col gap-8 h-full px-4 py-8 justify-start items-center sm:gap-12" @submit.prevent="onSubmit">
     <UStepper
       v-model="activeStep"
       :items="items"
@@ -206,9 +206,12 @@ const emit = defineEmits(["cancel"]);
         <!-- Members -->
         <UCard v-if="item.value === 'members'" variant="subtle">
           <template #header>
-            <h3 class="font-medium text-lg">
-              Add Members
+            <h3 class="font-semibold text-3xl">
+              And Members and configure your multisig security
             </h3>
+            <div class="text-secondary-100">
+              Add your team members and set threshold
+            </div>
           </template>
 
           <div class="space-y-4">
@@ -294,7 +297,7 @@ const emit = defineEmits(["cancel"]);
                 Back
               </UButton>
               <UButton type="submit" variant="solid">
-                Create Multisig
+                Next
               </UButton>
             </div>
           </template>
