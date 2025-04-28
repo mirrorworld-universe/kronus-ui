@@ -118,6 +118,8 @@ const onSubmit = handleSubmit(async (formValues) => {
       })),
       values.threshold,
       wallet.publicKey.value,
+      name.value,
+      description.value,
       `Create multisig for ${wallet.publicKey.value?.toBase58()} at ${Date.now()}`
     );
 

@@ -16,6 +16,7 @@ export const multisigs = pgTable("multisigs", {
   id: text("id").primaryKey(),
   publicKey: text("public_key").notNull().unique(),
   name: text("name").notNull(),
+  description: text("description"),
   threshold: integer("threshold").notNull(),
   creator: text("creator").notNull(), // Public key of the creator
   createdAt: timestamp("created_at").defaultNow(),

@@ -8,6 +8,14 @@ const wallet = useWallet();
 defineRouteRules({
   ssr: false
 });
+
+const { walletAddress } = useWalletConnection();
+
+const { data: multisigs } = await useFetch(`/api/multisigs/${walletAddress.value}`, {
+
+});
+
+watchEffect(() => console.log("all multisigs created", multisigs.value));
 </script>
 
 <template>

@@ -11,6 +11,8 @@ export async function createMultisig(
   members: multisig.types.Member[],
   threshold: number,
   rentCollector: PublicKey | null,
+  name: string,
+  description: string,
   memo: string,
 ) {
   console.info("started createMultisig");
@@ -71,7 +73,8 @@ export async function createMultisig(
             body: {
               address: multisigPda.toBase58(),
               creator_address: creator.toBase58(),
-              name: memo,
+              name,
+              description,
               created_at: Math.floor(Date.now() / 1000),
               members: members.map(m => ({
                 address: m.key.toBase58(),
