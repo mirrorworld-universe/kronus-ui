@@ -129,6 +129,8 @@ const onSubmit = handleSubmit(async (formValues) => {
     console.log("Created multisig at address", multisigAddress);
     console.log("Hash", signature);
 
+    emit("created");
+
     toast.add({
       title: "Success!",
       description: `Successfully created new multisig key ${multisigAddress}`,
@@ -207,7 +209,7 @@ const addMember = () => {
 
 const hasInvalidAddresses = computed(() => !!members.value.find(member => member.error));
 
-const emit = defineEmits(["cancel"]);
+const emit = defineEmits(["cancel", "created"]);
 </script>
 
 <template>

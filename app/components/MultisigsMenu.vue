@@ -3,27 +3,28 @@ defineProps<{
   collapsed?: boolean;
 }>();
 
-const teams = ref([{
-  label: "Kronus",
-  avatar: {
-    src: "https://github.com/nuxt.png",
-    alt: "Nuxt"
-  }
-}]);
-const selectedTeam = ref(teams.value[0]);
+const route = useRoute();
+const router = useRouter();
+
+const multisigParam = computed(() => route.params?.multisig as unknown as string);
+
+const { walletAddress } = useWalletConnection();
+const { data: multisigs } = await useFetch(`/api/multisigs/${walletAddress.value}`, {
+});
+
+const multisigsList = computed(() => (multisigs.value || []));
+const selectedMultisig = computed(() => multisigsList.value.find(multisig => multisig.id === multisigParam.value));
 
 const items = computed(() => {
-  return [teams.value.map(team => ({
-    ...team,
-    onSelect() {
-      selectedTeam.value = team;
+  return [multisigsList.value.map(multisig => ({
+    ...multisig,
+    label: multisig.name,
+    async onSelect() {
+      await router.push(`/${multisig.id}/home`);
     }
   })), [{
-    label: "Create team",
+    label: "Create new multisig",
     icon: "i-lucide-circle-plus"
-  }, {
-    label: "Manage teams",
-    icon: "i-lucide-cog"
   }]];
 });
 </script>
@@ -36,8 +37,8 @@ const items = computed(() => {
   >
     <UButton
       v-bind="{
-        ...selectedTeam,
-        label: collapsed ? undefined : selectedTeam?.label,
+        ...selectedMultisig,
+        label: collapsed ? undefined : selectedMultisig?.name,
         trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
       }"
       color="neutral"

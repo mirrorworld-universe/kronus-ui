@@ -115,7 +115,7 @@ onMounted(async () => {
       :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
     >
       <template #header="{ collapsed }">
-        <TeamsMenu :collapsed="collapsed" />
+        <MultisigsMenu :collapsed="collapsed" />
       </template>
 
       <template #default="{ collapsed }">

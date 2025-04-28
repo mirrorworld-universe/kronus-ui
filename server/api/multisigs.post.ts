@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
       id: validatedData.address,
       publicKey: validatedData.address,
       name: validatedData.name,
+      description: validatedData.description,
       creator: validatedData.creator_address,
       threshold: validatedData.threshold,
     });

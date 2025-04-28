@@ -16,6 +16,7 @@ export const createMultisigSchema = z.object({
   address: solanaPublicKey,
   creator_address: solanaPublicKey,
   name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
   threshold: z.number().int().positive("Threshold must be positive"),
   members: z.array(
     z.object({

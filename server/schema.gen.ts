@@ -91,6 +91,7 @@ export type Database = {
         Row: {
           created_at: string | null;
           creator: string;
+          description: string | null;
           id: string;
           name: string;
           public_key: string;
@@ -100,6 +101,7 @@ export type Database = {
         Insert: {
           created_at?: string | null;
           creator: string;
+          description?: string | null;
           id: string;
           name: string;
           public_key: string;
@@ -109,6 +111,7 @@ export type Database = {
         Update: {
           created_at?: string | null;
           creator?: string;
+          description?: string | null;
           id?: string;
           name?: string;
           public_key?: string;
