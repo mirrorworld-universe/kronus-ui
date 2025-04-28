@@ -1,6 +1,6 @@
 {
-  "out": "./api/db/migrations",
-  "schema": "./api/db/schema.ts",
+  "out": "./server/db/migrations",
+  "schema": "./server/db/schema.ts",
   "driver": "pg",
   "dbCredentials": {
     "connectionString": "postgresql://postgres:postgres@127.0.0.1:54322/postgres"

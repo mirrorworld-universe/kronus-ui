@@ -14,6 +14,7 @@ export const solanaPublicKey = z.string().refine((val) => {
 // Validation schema for multisig creation
 export const createMultisigSchema = z.object({
   address: solanaPublicKey,
+  creator_address: solanaPublicKey,
   name: z.string().min(1, "Name is required"),
   threshold: z.number().int().positive("Threshold must be positive"),
   members: z.array(

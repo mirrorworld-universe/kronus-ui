@@ -1,7 +1,9 @@
-/// <reference types="@cloudflare/workers-types" />
-import { drizzle } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+import * as schema from "./schema";
 
-// Assert DB environment variable as D1Database
-const db_instance = process.env.DB as unknown as D1Database;
+const pool = new Pool({
+  connectionString: process.env.NUXT_DATABASE_URL,
+});
 
-export const db = drizzle(db_instance);
+export const db = drizzle(pool, { schema });

@@ -33,10 +33,6 @@ export default defineNuxtConfig({
 
   compatibilityDate: "2024-07-11",
 
-  hub: {
-    database: true
-  },
-
   vite: {
     esbuild: {
       target: "esnext"
@@ -65,6 +61,10 @@ export default defineNuxtConfig({
         indent: 2
       }
     }
+  },
+
+  supabase: {
+    redirect: false
   },
   uiPro: {
     license: process.env.UI_PRO_LICENSE_KEY

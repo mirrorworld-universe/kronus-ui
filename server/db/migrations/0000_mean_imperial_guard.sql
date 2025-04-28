@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS "multisigs" (
 	"public_key" text NOT NULL,
 	"name" text NOT NULL,
 	"threshold" integer NOT NULL,
+	"creator" text NOT NULL,
 	"created_at" timestamp DEFAULT now(),
 	"updated_at" timestamp DEFAULT now(),
 	CONSTRAINT "multisigs_public_key_unique" UNIQUE("public_key")

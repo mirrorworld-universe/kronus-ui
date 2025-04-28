@@ -1,4 +1,3 @@
-import { sql } from "drizzle-orm";
 import { integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 // Contacts table for address book
@@ -18,6 +17,7 @@ export const multisigs = pgTable("multisigs", {
   publicKey: text("public_key").notNull().unique(),
   name: text("name").notNull(),
   threshold: integer("threshold").notNull(),
+  creator: text("creator").notNull(), // Public key of the creator
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

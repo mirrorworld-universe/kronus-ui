@@ -1,5 +1,5 @@
 {
-  "id": "71ad1f0e-eee1-4098-af93-a8c7d8990b0f",
+  "id": "4f8b7c50-0713-4729-b797-c6dd88ae57e7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "5",
   "dialect": "pg",
@@ -135,6 +135,12 @@
         "threshold": {
           "name": "threshold",
           "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator": {
+          "name": "creator",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
