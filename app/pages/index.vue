@@ -12,10 +12,21 @@ defineRouteRules({
 const { walletAddress } = useWalletConnection();
 
 const { data: multisigs, refresh } = await useFetch(`/api/multisigs/${walletAddress.value}`, {
-
+  immediate: true
 });
 
-watchEffect(() => console.log("all multisigs created", multisigs.value));
+const router = useRouter();
+
+watchOnce(multisigs, (newValue) => {
+  if (!!newValue && newValue?.length > 0) {
+    const defaultSquad = newValue[0];
+    if (defaultSquad) {
+      router.push(`${defaultSquad.id}/home`);
+    }
+  }
+}, {
+  immediate: true
+});
 </script>
 
 <template>
