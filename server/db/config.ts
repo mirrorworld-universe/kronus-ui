@@ -1,18 +1,19 @@
-import { drizzle } from "drizzle-orm/d1";
+import { drizzle } from "drizzle-orm/postgres-js";
+import postgres from "postgres";
 import * as schema from "./schema";
 
-export interface Env {
-  DB: D1Database;
+// Get database URL from environment variable
+const connectionString = process.env.DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set");
 }
 
-export type Context = {
-  db: ReturnType<typeof drizzle<typeof schema>>;
-};
+// Create postgres client
+const client = postgres(connectionString);
 
-export function createContext(env: Env): Context {
-  const db = drizzle(env.DB, { schema });
-  return { db };
-}
+// Create drizzle instance
+export const db = drizzle(client, { schema });
 
 // Database types
 export type Database = ReturnType<typeof drizzle<typeof schema>>;

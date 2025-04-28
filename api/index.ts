@@ -1,7 +1,7 @@
-import { migrate } from "./db/migrate";
+import { runMigrations } from "./db/migrate";
 
 // Run migrations on startup
-migrate().catch(console.error);
+runMigrations().catch(console.error);
 
 // Export all API routes
 export * from "./multisigs.post";

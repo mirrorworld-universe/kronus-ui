@@ -1,28 +1,33 @@
-import { readFileSync } from "fs";
-import { resolve } from "path";
-import { sql } from "drizzle-orm";
-import { getDB } from ".";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { migrate } from "drizzle-orm/node-postgres/migrator";
+import { Pool } from "pg";
+import * as schema from "./schema";
 
-export async function migrate() {
-  const db = await getDB();
+// Get database URL from environment variable
+const connectionString = process.env.NUXT_DATABASE_URL;
+
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set");
+}
+
+// Create postgres client
+const pool = new Pool({
+  connectionString,
+});
+
+// Create drizzle instance
+const db = drizzle(pool, { schema });
+
+// Run migrations
+export async function runMigrations() {
   try {
-    // Read the schema file
-    const schema = readFileSync(resolve(__dirname, "./schema.sql"), "utf-8");
-
-    // Split into individual statements
-    const statements = schema
-      .split(";")
-      .map((s: string) => s.trim())
-      .filter((s: string) => s.length > 0);
-
-    // Execute each statement
-    for (const statement of statements) {
-      await db.run(sql.raw(statement));
-    }
-
-    console.log("Migration completed successfully");
+    await migrate(db, { migrationsFolder: "drizzle" });
+    console.log("Migrations completed successfully");
   } catch (error) {
     console.error("Migration failed:", error);
     throw error;
+  } finally {
+    // Close the pool after migrations
+    await pool.end();
   }
 }

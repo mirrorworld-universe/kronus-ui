@@ -1,64 +1,59 @@
-import { sql } from "drizzle-orm";
-import { integer, primaryKey, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 // Contacts table for address book
-export const contacts = sqliteTable("contacts", {
+export const contacts = pgTable("contacts", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
   publicKey: text("public_key").notNull().unique(),
   description: text("description"),
   tags: text("tags"), // JSON array stored as TEXT
-  createdAt: text("created_at").default(sql`datetime('now')`),
-  updatedAt: text("updated_at").default(sql`datetime('now')`),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Multisig groups table
-export const multisigs = sqliteTable("multisigs", {
+export const multisigs = pgTable("multisigs", {
   id: text("id").primaryKey(),
   publicKey: text("public_key").notNull().unique(),
   name: text("name").notNull(),
   threshold: integer("threshold").notNull(),
-  createdAt: text("created_at").default(sql`datetime('now')`),
-  updatedAt: text("updated_at").default(sql`datetime('now')`),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
-// Multisig members table (many-to-many) for historical tracking
-export const multisigMembers = sqliteTable("multisig_members", {
+// Multisig members table
+export const multisigMembers = pgTable("multisig_members", {
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
   publicKey: text("public_key").notNull(),
-  contactId: text("contact_id").references(() => contacts.id),
-  role: text("role"),
-  createdAt: text("created_at").default(sql`datetime('now')`),
 }, table => ({
   pk: primaryKey({ columns: [table.multisigId, table.publicKey] }),
 }));
 
 // Vaults table
-export const vaults = sqliteTable("vaults", {
+export const vaults = pgTable("vaults", {
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
   vaultIndex: integer("vault_index").notNull(),
-  createdAt: text("created_at").default(sql`datetime('now')`),
+  createdAt: timestamp("created_at").defaultNow(),
 }, table => ({
   pk: primaryKey({ columns: [table.multisigId, table.vaultIndex] }),
 }));
 
 // Transactions table
-export const transactions = sqliteTable("transactions", {
+export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
-  proposer: text("proposer").notNull(),
-  instructions: text("instructions"), // JSON stored as TEXT
-  status: text("status", { enum: ["pending", "approved", "executed", "rejected"] }).notNull(),
-  createdAt: text("created_at").default(sql`datetime('now')`),
-  updatedAt: text("updated_at").default(sql`datetime('now')`),
+  vaultIndex: integer("vault_index").notNull(),
+  status: text("status").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 // Transaction signatures table
-export const transactionSignatures = sqliteTable("transaction_signatures", {
+export const transactionSignatures = pgTable("transaction_signatures", {
   transactionId: text("transaction_id").notNull().references(() => transactions.id),
   publicKey: text("public_key").notNull(),
   contactId: text("contact_id").references(() => contacts.id),
-  timestamp: text("timestamp").default(sql`datetime('now')`),
+  timestamp: timestamp("timestamp").defaultNow(),
 }, table => ({
   pk: primaryKey({ columns: [table.transactionId, table.publicKey] }),
 }));
