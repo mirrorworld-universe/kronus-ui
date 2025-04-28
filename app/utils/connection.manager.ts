@@ -38,6 +38,9 @@ class ConnectionManager {
   }
 
   private async startHealthCheck() {
+    // Do not run setInterval in the server-side
+    if (typeof window === "undefined") return;
+
     this.checkInterval = setInterval(async () => {
       await Promise.all(
         RPC_CONNECTION_TRANSPORTS.map(endpoint => this.checkEndpointHealth(endpoint))

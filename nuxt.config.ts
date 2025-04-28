@@ -7,9 +7,9 @@ export default defineNuxtConfig({
     "@vueuse/nuxt",
     "@nuxt/fonts",
     "@nuxt/icon",
-    "@nuxt/scripts"
+    "@nuxt/scripts",
+    "@nuxthub/core",
   ],
-  ssr: false,
 
   devtools: {
     enabled: true
@@ -27,10 +27,15 @@ export default defineNuxtConfig({
     compatibilityVersion: 4
   },
   experimental: {
-    clientNodeCompat: true
+    clientNodeCompat: true,
+    inlineRouteRules: true,
   },
 
   compatibilityDate: "2024-07-11",
+
+  hub: {
+    database: true
+  },
 
   vite: {
     esbuild: {

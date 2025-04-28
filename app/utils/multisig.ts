@@ -1,6 +1,7 @@
 import type { PublicKey } from "@solana/web3.js";
 import { Keypair, Transaction } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
+import { $fetch } from "ofetch";
 
 export async function createMultisig(
   wallet: WalletStore,
@@ -55,13 +56,34 @@ export async function createMultisig(
     wallet,
     signers,
     tx,
-    ({ status }) => {
+    async ({ status }) => {
       if (status === "confirmed") {
         console.log(
           "Successfully Created Squad Multisig: ",
           multisigPda.toBase58()
         );
         console.info("Write this address down, you will need it later.");
+
+        // Store multisig data in D1
+        try {
+          await $fetch("/api/multisigs", {
+            method: "POST",
+            body: {
+              address: multisigPda.toBase58(),
+              creator_address: creator.toBase58(),
+              name: memo,
+              created_at: Math.floor(Date.now() / 1000),
+              members: members.map(m => ({
+                address: m.key.toBase58(),
+                permissions: m.permissions
+              })),
+              threshold,
+              vault_index: 0
+            }
+          });
+        } catch (error) {
+          console.error("Failed to store multisig data:", error);
+        }
       }
     }
   );

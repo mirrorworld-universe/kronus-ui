@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { useWallet } from "solana-wallets-vue";
 import CreateMultisig from "~/components/home/CreateMultisig.vue";
+import WalletConnectButton from "~/components/WalletConnectButton.vue";
 
 const wallet = useWallet();
+
+defineRouteRules({
+  ssr: false
+});
 </script>
 
 <template>

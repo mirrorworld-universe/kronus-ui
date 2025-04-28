@@ -60,7 +60,7 @@ onMounted(() => {
     </UCard>
 
     <div v-if="loading" class="flex justify-center py-8">
-      <ULoadingIcon />
+      <UIcon name="line-md:loading-twotone-loop" class="size-4" />
     </div>
 
     <div v-else-if="vaults.length === 0" class="text-center py-8 text-secondary-100">

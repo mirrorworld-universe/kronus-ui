@@ -1,5 +1,10 @@
 <script setup lang="ts">
 import CreateMultisig from "~/components/home/CreateMultisig.vue";
+import WalletConnectButton from "~/components/WalletConnectButton.vue";
+
+defineRouteRules({
+  ssr: false
+});
 </script>
 
 <template>

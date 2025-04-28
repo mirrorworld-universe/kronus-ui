@@ -1,5 +1,5 @@
 name = "kronus-app-ui"
-main = "src/index.ts"
+main = "api/index.ts"
 compatibility_date = "2024-01-01"
 
 [[d1_databases]]
@@ -12,3 +12,6 @@ command = "npm run build"
 
 [env.production]
 workers_dev = true
+
+[triggers]
+crons = ["0 0 * * *"] # Run migrations daily at midnight
