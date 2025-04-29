@@ -40,3 +40,11 @@ export const createMultisigSchema = z.object({
   message: "Member addresses must be unique",
   path: ["members"]
 });
+
+// Validation schema for multisig creation
+export const createVaultSchema = z.object({
+  multisig_id: solanaPublicKey,
+  vault_index: z.number().int().positive("Vault index must be positive"),
+  public_key: solanaPublicKey,
+  name: z.string().min(1, "Name is required"),
+});
