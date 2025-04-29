@@ -21,7 +21,7 @@ watchOnce(multisigs, (newValue) => {
   if (!!newValue && newValue?.length > 0) {
     const defaultSquad = newValue[0];
     if (defaultSquad) {
-      router.push(`${defaultSquad.id}/home`);
+      router.push(`/squads/${defaultSquad.id}/home`);
     }
   }
 }, {

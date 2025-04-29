@@ -3,21 +3,22 @@ import { useWallet } from "solana-wallets-vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import VaultsList from "~/components/multisig/VaultsList.vue";
 
-const wallet = useWallet();
-
-const route = useRoute();
-
-const multisigAddress = computed(() => route.params.genesis_vault as string);
-
 defineRouteRules({
   ssr: false
 });
+
+const wallet = useWallet();
+const route = useRoute();
+
+const genesisVault = computed(() => route.params.genesis_vault as string);
+const { data: multisig } = await useFetch(`/api/multisigs/${genesisVault.value}`);
+const multisigAddress = computed(() => multisig.value!.id);
 </script>
 
 <template>
-  <UDashboardPanel id="create">
+  <UDashboardPanel id="treasury">
     <template #header>
-      <UDashboardNavbar title="Create New Multisig" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Treasury" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -30,9 +31,6 @@ defineRouteRules({
 
     <template #body>
       <VaultsList v-if="wallet?.connected.value" :multisig-address="multisigAddress" />
-      <UCard v-else>
-        Please connect your wallet to continue.
-      </UCard>
     </template>
   </UDashboardPanel>
 </template>

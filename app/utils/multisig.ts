@@ -66,6 +66,13 @@ export async function createMultisig(
         );
         console.info("Write this address down, you will need it later.");
 
+        // Derive frist vault multisig address
+        const [firstVaultPublicKey] = multisig.getVaultPda({
+          index: 0,
+          multisigPda,
+          programId: SQUADS_V4_PROGRAM_ID,
+        });
+
         // Store multisig data in D1
         try {
           await $fetch("/api/multisigs", {
@@ -73,6 +80,8 @@ export async function createMultisig(
             body: {
               address: multisigPda.toBase58(),
               creator_address: creator.toBase58(),
+              create_key: createKey.toBase58(),
+              first_vault: firstVaultPublicKey.toBase58(),
               name,
               description,
               created_at: Math.floor(Date.now() / 1000),

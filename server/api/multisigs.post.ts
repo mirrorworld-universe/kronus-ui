@@ -1,7 +1,11 @@
 import { z } from "zod";
+import * as multisig from "@sqds/multisig";
+import { PublicKey } from "@solana/web3.js";
 import { db } from "../db";
 import { multisigs, multisigMembers, vaults } from "../db/schema";
 import { createMultisigSchema } from "../validations/schemas";
+
+import { SQUADS_V4_PROGRAM_ID } from "../../app/utils/constants";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
@@ -10,15 +14,24 @@ export default defineEventHandler(async (event) => {
     // Validate request body
     const validatedData = createMultisigSchema.parse(body);
 
+    // Derive frist vault multisig address
+    const [firstVaultPublicKey] = multisig.getVaultPda({
+      index: 0,
+      multisigPda: new PublicKey(validatedData.address),
+      programId: SQUADS_V4_PROGRAM_ID,
+    });
+
     // Create the multisig
-    await db.insert(multisigs).values({
+    const result = await db.insert(multisigs).values({
       id: validatedData.address,
       publicKey: validatedData.address,
+      createKey: validatedData.create_key,
+      firstVault: firstVaultPublicKey.toBase58(),
       name: validatedData.name,
       description: validatedData.description,
       creator: validatedData.creator_address,
       threshold: validatedData.threshold,
-    });
+    }).returning();
 
     // Add members
     await Promise.all(
@@ -33,10 +46,15 @@ export default defineEventHandler(async (event) => {
     // Create initial vault
     await db.insert(vaults).values({
       multisigId: validatedData.address,
+      name: "Default",
+      publicKey: firstVaultPublicKey.toBase58(),
       vaultIndex: 0,
     });
 
-    return { success: true };
+    setResponseStatus(event, 201);
+    return {
+      data: result
+    };
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createError({

@@ -8,11 +8,9 @@ import { PublicKey } from "@solana/web3.js";
 import { useWallet } from "solana-wallets-vue";
 import { types } from "@sqds/multisig";
 import { useWalletConnection } from "~/composables/useWalletConnection";
-import { useConnection } from "~/composables/useConnection";
 
 const { walletAddress } = useWalletConnection();
 const wallet = useWallet();
-const { connection } = useConnection();
 
 const items: StepperItem[] = [
   { value: "details", title: "Multisig Details", description: "Name and describe your Multisig" },
@@ -102,9 +100,6 @@ const isLoading = ref(false);
 const onSubmit = handleSubmit(async (formValues) => {
   try {
     isLoading.value = true;
-    // Example of using the connection
-    const latestBlockhash = await connection.value.getLatestBlockhash();
-    console.log("Latest blockhash:", latestBlockhash);
 
     const { signature, multisigAddress } = await createMultisig(
       wallet,
@@ -130,6 +125,8 @@ const onSubmit = handleSubmit(async (formValues) => {
     console.log("Hash", signature);
 
     emit("created");
+    emitter.emit("multisigs:refresh");
+    router.push(`/squads/${multisigAddress}/home`);
 
     toast.add({
       title: "Success!",

@@ -15,6 +15,8 @@ export const contacts = pgTable("contacts", {
 export const multisigs = pgTable("multisigs", {
   id: text("id").primaryKey(),
   publicKey: text("public_key").notNull().unique(),
+  createKey: text("create_key").notNull().unique(),
+  firstVault: text("first_vault").notNull().unique(),
   name: text("name").notNull(),
   description: text("description"),
   threshold: integer("threshold").notNull(),
@@ -35,6 +37,8 @@ export const multisigMembers = pgTable("multisig_members", {
 export const vaults = pgTable("vaults", {
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
   vaultIndex: integer("vault_index").notNull(),
+  name: text("name").notNull(),
+  publicKey: text("public_key").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
 }, table => ({
   pk: primaryKey({ columns: [table.multisigId, table.vaultIndex] }),

@@ -1,4 +1,4 @@
-import type { Database } from "../../schema.gen";
+import type { Database } from "../../../schema.gen";
 import { serverSupabaseClient } from "#supabase/server";
 import { solanaPublicKey } from "~~/server/validations/schemas";
 
@@ -13,6 +13,5 @@ export default eventHandler(async (event) => {
   });
 
   const { data } = await client.from("multisigs").select().eq("creator", creatorPublicKey.data);
-
   return data;
 });

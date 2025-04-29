@@ -4,31 +4,43 @@ const toast = useToast();
 
 const open = ref(false);
 
-const links = [[{
+const activeMultisig = computed(() => route.params?.genesis_vault as unknown as string);
+
+const links = computed(() => [[{
   label: "Dashboard",
   icon: "i-lucide-layout-dashboard",
-  to: "/",
+  to: `/squads/${activeMultisig.value}/home`,
+  onSelect: () => {
+    open.value = false;
+  }
+},
+{
+  label: "Transactions",
+  icon: "i-lucide-zap",
+  to: `/squads/${activeMultisig.value}/transactions`,
+  badge: "4",
+  onSelect: () => {
+    open.value = false;
+  }
+},
+{
+  label: "Members",
+  to: `/squads/${activeMultisig.value}/members`,
+  icon: "i-lucide-users",
+  onSelect: () => {
+    open.value = false;
+  }
+},
+
+{
+  label: "Treasury",
+  icon: "i-lucide-wallet-cards",
+  to: `/squads/${activeMultisig.value}/treasury`,
   onSelect: () => {
     open.value = false;
   }
 },
   // {
-  //   label: "Transactions",
-  //   icon: "i-lucide-zap",
-  //   to: "/inbox",
-  //   badge: "4",
-  //   onSelect: () => {
-  //     open.value = false;
-  //   }
-  // },
-  // {
-  //   label: "Treasury",
-  //   icon: "i-lucide-wallet-cards",
-  //   to: "/settings/notifications",
-  //   onSelect: () => {
-  //     open.value = false;
-  //   }
-  // }, {
   //   label: "Members",
   //   to: "/settings/members",
   //   icon: "i-lucide-users",
@@ -60,12 +72,12 @@ const links = [[{
   icon: "i-lucide-info",
   to: "https://github.com/nuxt/ui-pro",
   target: "_blank"
-}]];
+}]]);
 
 const groups = computed(() => [{
   id: "links",
   label: "Go to",
-  items: links.flat()
+  items: links.value.flat()
 }, {
   id: "code",
   label: "Code",

@@ -59,6 +59,14 @@ export const useWalletConnection = () => {
     }
   };
 
+  // Sideeffects for when the wallet
+  // changes.
+  watch(publicKey, () => {
+    emitter.emit("multisigs:refresh");
+    emitter.emit("treasury:refresh");
+    emitter.emit("transactions:refresh");
+  });
+
   return {
     walletAddress,
     connected,

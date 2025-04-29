@@ -38,6 +38,7 @@
     "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "drizzle-orm": "^0.43.1",
+    "mitt": "^3.0.1",
     "nuxt": "^3.16.2",
     "pg": "^8.15.6",
     "solana-wallets-vue": "^0.7.1",
