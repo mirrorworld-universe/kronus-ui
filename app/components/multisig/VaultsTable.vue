@@ -3,7 +3,7 @@ import { h, resolveComponent } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import * as multisig from "@sqds//multisig";
 import { PublicKey } from "@solana/web3.js";
-import type { Vault } from "@/types/squads";
+import type { IVault } from "@/types/squads";
 import { useRefresh } from "~/composables/queries/useRefresh";
 
 const UButton = resolveComponent("UButton");
@@ -28,7 +28,7 @@ const genesisVault = computed(() => route.params.genesis_vault as string);
 
 const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress));
 
-const { data } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
+const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 const { pending, refresh } = useRefresh(VAULTS_QUERY_KEY);
 
@@ -69,13 +69,13 @@ const columns: TableColumn<TransformedVault>[] = [
         class: "flex flex-col gap-1",
         to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}`
       }, () => [
-        h("div", { class: "text-neutral-50" }, row.original.name),
+        h("div", { class: "text-(--ui-text)" }, row.original.name),
         h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
           truncateMiddle(row.getValue("address")),
           h(UButton, {
             icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
             onClick: () => copyToClipboard(row.getValue("address")),
-            class: "text-neutral-200"
+            class: "text-(--ui-muted) hover:text-(--ui-text)"
           })
         ])
       ]);
@@ -88,7 +88,7 @@ const columns: TableColumn<TransformedVault>[] = [
       return h("div", {
         class: "flex flex-col gap-1"
       }, () => [
-        h("div", { class: "text-neutral-50" }, Intl.NumberFormat("en-US", {
+        h("div", { class: "text-(--ui-text)" }, Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           currencySign: "standard",
@@ -172,8 +172,8 @@ async function handleCreateAccount() {
 
       <UModal
         v-model:open="isAddAccountModalOpen"
-        title="Modal with footer"
-        description="This is useful when you want a form in a Modal."
+        title="Add Account"
+        description="Add a new vault account to your multisig"
         :ui="{ footer: 'justify-end' }"
       >
         <UButton leading-icon="line-md:plus" :loading="isPending">

@@ -1,4 +1,4 @@
-export interface Vault {
+export interface IVault {
   created_at: string | null;
   multisig_id: string;
   name: string;
@@ -6,7 +6,7 @@ export interface Vault {
   vault_index: number;
 }
 
-export interface Multisig {
+export interface IMultisig {
   create_key: string;
   created_at: string | null;
   creator: string;
@@ -17,4 +17,11 @@ export interface Multisig {
   public_key: string;
   threshold: number;
   updated_at: string | null;
+}
+
+export interface IMember {
+  name?: string;
+  public_key: string;
+  mask: number;
+  roles: MemberRole[];
 }

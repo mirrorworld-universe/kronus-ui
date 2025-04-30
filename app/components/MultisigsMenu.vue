@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRefresh } from "~/composables/queries/useRefresh";
-import type { Multisig } from "~/types/squads";
+import type { IMultisig } from "~/types/squads";
 
 defineProps<{
   collapsed?: boolean;
@@ -15,8 +15,8 @@ const { walletAddress } = useWalletConnection();
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
 
-const { data: multisigs } = await useNuxtData<Multisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
-const { data: currentMultisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
+const { data: currentMultisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
 const CREATE_NEW_MULTISIG_ITEM = reactive({

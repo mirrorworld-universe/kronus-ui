@@ -2,7 +2,7 @@
 import { useWallet } from "solana-wallets-vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import VaultsTable from "~/components/multisig/VaultsTable.vue";
-import type { Multisig, Vault } from "~/types/squads";
+import type { IMultisig, IVault } from "~/types/squads";
 
 defineRouteRules({
   ssr: false
@@ -13,12 +13,12 @@ const route = useRoute();
 
 const genesisVault = computed(() => route.params.genesis_vault as string);
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
 const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 
-const { data: vaults } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
+const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 watchEffect(() => {
   (vaults.value || []).forEach((vault) => {

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 // import { useWallet } from "solana-wallets-vue";
-// import CreateMultisig from "~/components/home/CreateMultisig.vue";
+
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useMultisig } from "~/composables/queries/useMultisigs";
-import type { Multisig } from "~/types/squads";
+import type { IMultisig } from "~/types/squads";
 
 // const wallet = useWallet();
 
@@ -15,11 +15,12 @@ const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
 
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
 
 const { data } = await useMultisig(multisigAddress);
+
 const prettifiedData = computed(() => data.value?.pretty());
 const computedMultisigData = computed(() => ({
   address: genesisVault.value,

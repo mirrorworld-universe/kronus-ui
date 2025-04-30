@@ -3,7 +3,7 @@ import { h, resolveComponent } from "vue";
 import type { TableColumn } from "@nuxt/ui";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import type { FormattedTokenBalanceWithPrice } from "~/utils/token-balances";
-import type { Vault, Multisig } from "~/types/squads";
+import type { IVault, IMultisig } from "~/types/squads";
 
 const UButton = resolveComponent("UButton");
 
@@ -27,12 +27,12 @@ const vaultAccount = computed(() => route.params.account as string);
 const genesisVault = computed(() => route.params.genesis_vault as string);
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const VAULT_BALANCE_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value));
-const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 const multisigAddress = computed(() => multisig.value!.id);
 
 const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 
-const { data: vaults } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
+const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 const { data } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCE_QUERY_KEY.value);
 const { refresh, pending } = useRefresh(VAULT_BALANCE_QUERY_KEY);
 
@@ -106,13 +106,13 @@ const columns: TableColumn<TransformedToken>[] = [
         h("div", {
           class: "flex flex-col",
         }, [
-          h("span", { class: "leading-none text-neutral-50" }, row.getValue("symbol")),
+          h("span", { class: "leading-none text-(--ui-text)" }, row.getValue("symbol")),
           h("span", { class: "leading-none flex justify-start items-center gap-1 text-xs" }, [
             truncateMiddle(row.original.mint),
             h(UButton, {
               icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
               onClick: () => copyToClipboard(row.original.mint),
-              class: " text-neutral-500 hover:text-neutral-200"
+              class: "text-(--ui-muted) hover:text-(--ui-text)"
             })
           ])
         ])
@@ -126,7 +126,7 @@ const columns: TableColumn<TransformedToken>[] = [
       return h("div", {
         class: "flex flex-col gap-1"
       }, [
-        h("div", { class: "text-neutral-50" }, Intl.NumberFormat("en-US", {
+        h("div", { class: "text-(--ui-text)" }, Intl.NumberFormat("en-US", {
           currencySign: "standard",
           minimumFractionDigits: 2,
           minimumSignificantDigits: 2
@@ -141,7 +141,7 @@ const columns: TableColumn<TransformedToken>[] = [
       return h("div", {
         class: "flex flex-col gap-1"
       }, [
-        h("div", { class: "text-neutral-50" }, Intl.NumberFormat("en-US", {
+        h("div", { class: "text-(--ui-text)" }, Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           currencySign: "standard",

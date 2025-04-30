@@ -133,3 +133,16 @@ export async function listMultisigVaults(
     throw error;
   }
 }
+
+export type MemberRole = "Proposer" | "Voter" | "Executor";
+export function memberToRoles(member: multisig.generated.Member): MemberRole[] {
+  const roles: MemberRole[] = [];
+  const mask = member.permissions.mask;
+
+  if (mask & 1) roles.push("Proposer");
+  if (mask & 2) roles.push("Voter");
+  if (mask & 4) roles.push("Executor");
+  // if (mask === 7) roles.push("Almighty");
+
+  return roles;
+}
