@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { h, resolveComponent } from "vue";
 import type { TableColumn } from "@nuxt/ui";
+import * as multisig from "@sqds//multisig";
+import { PublicKey } from "@solana/web3.js";
 import type { Vault } from "@/types/squads";
 import { useRefresh } from "~/composables/queries/useRefresh";
 
@@ -106,6 +108,48 @@ const columns: TableColumn<TransformedVault>[] = [
     }
   },
 ];
+const newAccountName = ref("");
+const isAddAccountModalOpen = ref(false);
+const isPending = ref(false);
+async function handleCreateAccount() {
+  try {
+    isPending.value = true;
+
+    const nextVaultIndex = (Math.max(...(vaults.value || []).map(v => v.vault_index)) || 0) + 1;
+
+    const [nextVaultPublicKey] = multisig.getVaultPda({
+      index: nextVaultIndex,
+      multisigPda: new PublicKey(props.multisigAddress),
+      programId: SQUADS_V4_PROGRAM_ID,
+    });
+
+    const result = await $fetch(`/api/vaults/${props.multisigAddress}`, {
+      method: "POST",
+      body: {
+        vault_index: nextVaultIndex,
+        name: newAccountName.value,
+        public_key: nextVaultPublicKey.toBase58()
+      }
+    });
+
+    if (result.public_key) {
+      toast.add({
+        description: "Vault created!",
+        color: "success"
+      });
+      await refresh();
+    }
+  } catch (error: any) {
+    toast.add({
+      title: "Error creating Vault",
+      description: error.message,
+      color: "error"
+    });
+  } finally {
+    newAccountName.value = "";
+    isPending.value = false;
+  }
+}
 </script>
 
 <template>
@@ -126,9 +170,32 @@ const columns: TableColumn<TransformedVault>[] = [
         />
       </div>
 
-      <!-- <UButton leading-icon="line-md:plus">
-        Propo
-      </UButton> -->
+      <UModal
+        v-model:open="isAddAccountModalOpen"
+        title="Modal with footer"
+        description="This is useful when you want a form in a Modal."
+        :ui="{ footer: 'justify-end' }"
+      >
+        <UButton leading-icon="line-md:plus" :loading="isPending">
+          Add Account
+        </UButton>
+
+        <template #body>
+          <UFormField label="Account name" required>
+            <UInput v-model="newAccountName" placeholder="Enter account name" />
+          </UFormField>
+        </template>
+
+        <template #footer>
+          <UButton
+            label="Cancel"
+            color="neutral"
+            variant="outline"
+            @click="isAddAccountModalOpen = false"
+          />
+          <UButton label="Finish" color="neutral" @click="handleCreateAccount" />
+        </template>
+      </UModal>
     </div>
 
     <!-- <UCard v-if="error" color="red" class="mb-4">

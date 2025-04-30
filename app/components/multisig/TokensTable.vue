@@ -71,6 +71,23 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
+function handleClickSendToken(token: TransformedToken) {
+  console.log("clicked send token", token);
+  toast.add({
+    title: "Sending tokens coming soon",
+    icon: "line-md:loading-twotone-loop",
+    color: "info",
+  });
+}
+function handleClickReceiveToken(token: TransformedToken) {
+  console.log("clicked receive token", token);
+  toast.add({
+    title: "Receiving tokens coming soon",
+    icon: "line-md:loading-twotone-loop",
+    color: "info",
+  });
+}
+
 const UAvatar = resolveComponent("UAvatar");
 
 const columns: TableColumn<TransformedToken>[] = [
@@ -131,6 +148,31 @@ const columns: TableColumn<TransformedToken>[] = [
           minimumFractionDigits: 2,
           maximumFractionDigits: 3,
         }).format(row.original.tokenValue)),
+      ]);
+    }
+  },
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      return h("div", {
+        class: "flex justify-start items-center gap-3",
+      },
+      [
+        h(UButton, {
+          icon: "line-md:arrow-up",
+          ariaLabel: `Send ${row.getValue("symbol")}`,
+          color: "neutral",
+          variant: "subtle",
+          onClick: () => handleClickSendToken(row.original)
+        }),
+        h(UButton, {
+          icon: "line-md:arrow-down",
+          ariaLabel: `Receive ${row.getValue("symbol")}`,
+          color: "neutral",
+          variant: "subtle",
+          onClick: () => handleClickReceiveToken(row.original)
+        }),
       ]);
     }
   },

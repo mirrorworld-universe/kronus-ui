@@ -21,9 +21,15 @@ defineRouteRules({
     </template>
 
     <template #body>
-      <UCard>
-        Members
-      </UCard>
+      <UContainer>
+        <div class="flex flex-col gap-4">
+          <div class="flex items-center justify-between">
+            <h3 class="text-2xl font-semibold">
+              Members
+            </h3>
+          </div>
+        </div>
+      </UContainer>
     </template>
   </UDashboardPanel>
 </template>
