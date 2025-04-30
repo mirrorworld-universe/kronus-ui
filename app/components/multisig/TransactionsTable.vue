@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import type { TableColumn } from "@nuxt/ui";
 import type * as _multisig from "@sqds/multisig";
+import { NuxtLink } from "#components";
 
 const props = defineProps<{
   multisigPda: string;
@@ -22,9 +24,107 @@ const data = computed(() => props.transactions.map((transaction) => {
     status: stale ? "Stale" : transaction.proposal?.status.__kind || "None"
   };
 }));
+
+type TransformedTransaction = {
+  stale: boolean;
+  status: string;
+  transactionPda: string;
+  proposalPda: string;
+  transaction: _multisig.generated.VaultTransaction | null;
+  proposal: _multisig.generated.Proposal | null;
+  index: bigint;
+};
+const UButton = resolveComponent("UButton");
+const UBadge = resolveComponent("UBadge");
+
+// 'Rejected', 'Approved', 'Executing', 'Executed', 'Cancelled'
+const statusToColor = (status: string) => {
+  switch (status) {
+    case "Active":
+      return "info";
+    case "Stale":
+      return "neutral";
+    case "Approved":
+      return "info";
+    case "Executed":
+      return "success";
+    case "Rejected":
+      return "error";
+    case "Executing":
+      return "warning";
+    default:
+      return "neutral";
+  }
+};
+
+const columns: TableColumn<TransformedTransaction>[] = [
+  {
+    accessorKey: "transaction",
+    header: undefined,
+    cell: ({ row }) => row.original.transaction?.index
+  },
+  {
+    accessorKey: "transactionPda",
+    header: "Transaction",
+    cell: ({ row }) => {
+      return h(NuxtLink, {
+        to: createSolanaExplorerUrl(row.getValue("transactionPda")),
+        target: "_blank",
+        class: "flex justify-start items-center gap-2 underline decoration-dotted transition-colors underline-offset-3 hover:text-primary",
+      }, () => [
+        h("pre", truncateMiddle(row.getValue("transactionPda")))
+      ]);
+    }
+  },
+  {
+    accessorKey: "proposalPda",
+    header: "Proposal",
+    cell: ({ row }) => {
+      return h(NuxtLink, {
+        to: createSolanaExplorerUrl(row.getValue("proposalPda")),
+        target: "_blank",
+        class: "flex justify-start items-center gap-2 underline decoration-dotted transition-colors underline-offset-3 hover:text-primary",
+      }, () => [
+        h("pre", truncateMiddle(row.getValue("proposalPda")))
+      ]);
+    }
+  },
+
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => h(UBadge, {
+      class: "rounded-full",
+      variant: "subtle",
+      color: statusToColor(row.getValue("status"))
+    }, () => row.getValue("status"))
+  },
+];
 </script>
 
 <template>
-  <div>Transactions list</div>
-  <pre>{{ data }}</pre>
+  <div class="space-y-4">
+    <div class="flex justify-between items-center">
+      <div class="flex justify-start items-center gap-3">
+        <h2 class="text-xl font-semibold">
+          Transactions
+        </h2>
+      </div>
+    </div>
+
+    <!-- <div v-if="pending" class="flex justify-center py-8">
+      <UIcon name="line-md:loading-twotone-loop" class="size-4" />
+    </div> -->
+
+    <div v-if="data.length === 0" class="text-center py-8 text-secondary-100">
+      No vaults found for this multisig
+    </div>
+
+    <UTable
+      v-else
+      :data="data"
+      class="flex-1"
+      :columns="columns"
+    />
+  </div>
 </template>

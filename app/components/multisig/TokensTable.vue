@@ -235,42 +235,5 @@ const columns: TableColumn<TransformedToken>[] = [
       :columns="columns"
       class="flex-1"
     />
-
-    <!-- <div v-else class="space-y-4">
-      <UCard v-for="vault in vaults" :key="vault.public_key">
-        <div class="flex justify-between items-start">
-          <div class="space-y-2">
-            <div class="font-medium">
-              Vault
-            </div>
-            <div class="text-sm text-secondary-100 font-mono">
-              {{ vault.name }}
-            </div>
-          </div>
-          <UButton
-            color="neutral"
-            variant="ghost"
-            icon="i-lucide-copy"
-            @click="copyToClipboard(vault.public_key)"
-          />
-        </div>
-        <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
-          <div>
-            <div class="text-secondary-100">
-              Address
-            </div>
-            <div class="font-mono">
-              {{ vault.public_key.slice(0, 8) }}...
-            </div>
-          </div>
-          <div>
-            <div class="text-secondary-100">
-              Created
-            </div>
-            <div>Unknown</div>
-          </div>
-        </div>
-      </UCard>
-    </div> -->
   </div>
 </template>

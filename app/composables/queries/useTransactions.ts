@@ -7,6 +7,7 @@ const TRANSACTIONS_PER_PAGE = 12;
 
 export type TransactionQueryResult = {
   transactionPda: [PublicKey, number];
+  proposalPda: [PublicKey, number];
   proposal: multisig.generated.Proposal | null;
   transaction: multisig.generated.VaultTransaction | null;
   index: bigint;
@@ -79,6 +80,7 @@ export async function useTransactions() {
     return {
       ...transaction,
       transactionPda: transaction.transactionPda[0].toBase58(),
+      proposalPda: transaction.proposalPda[0].toBase58(),
       index: SerializableBigInt(transaction.index)
     };
   }));
@@ -132,5 +134,5 @@ async function fetchTransactionData(
     transaction = null;
   }
 
-  return { transactionPda, transaction, proposal, index };
+  return { transactionPda, transaction, proposalPda, proposal, index };
 }

@@ -1,6 +1,7 @@
 export default defineAppConfig({
   toaster: {
-    position: "bottom-center" as const
+    position: "bottom-center" as const,
+    expand: false,
   },
   ui: {
     colors: {
