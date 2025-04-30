@@ -98,7 +98,7 @@ const columns: TableColumn<TransformedVault>[] = [
       return h("span", {
         class: "flex flex-col gap-1",
       }, [
-        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}` }, row.original.name),
+        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}` }, () => row.original.name),
         h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
           truncateMiddle(row.getValue("address")),
           h(UButton, {
@@ -121,7 +121,7 @@ const columns: TableColumn<TransformedVault>[] = [
           class: "flex items-center justify-start gap-3"
         }, [
           h("div", { class: "text-(--ui-text)" }, row.getValue("vaultTokensValue")),
-          h(UAvatarGroup, { max: 4, size: "2xs" }, row.original.tokens.map(token => h(UAvatar, {
+          h(UAvatarGroup, { max: 4, size: "2xs" }, () => row.original.tokens.map(token => h(UAvatar, {
             class: "-ml-1",
             src: token.symbol === "SOL" ? "/sol.png" : token.metadata?.image,
             alt: token.symbol,

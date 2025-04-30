@@ -11,6 +11,6 @@ export function useMultisig(multisigAddress: Ref<string>) {
       new PublicKey(multisigAddress.value)
     );
 
-    return multisigAccount;
+    return multisigAccount.pretty();
   });
 }

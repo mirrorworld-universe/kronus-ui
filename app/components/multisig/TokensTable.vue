@@ -195,19 +195,30 @@ const columns: TableColumn<TransformedToken>[] = [
           {{ currentVault?.name }}
         </h2>
 
-        <UButton
-          icon="i-lucide-refresh-cw"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          :loading="pending"
-          @click="() => refresh()"
-        />
-      </div>
+        <UTooltip text="Copy vault address to clipboard">
+          <UButtonGroup size="lg">
+            <UButton
+              color="neutral"
+              trailing-icon="solar:copy-linear"
+              variant="soft"
+              @click="() => copyToClipboard(vaultAccount)"
+            >
+              {{ truncateMiddle(vaultAccount) }}&nbsp;&nbsp;&nbsp;|
+            </UButton>
+          </UButtonGroup>
+        </UTooltip>
 
-      <!-- <UButton leading-icon="line-md:plus">
-        Propo
-      </UButton> -->
+        <UTooltip text="Refresh account balances">
+          <UButton
+            icon="i-lucide-refresh-cw"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            :loading="pending"
+            @click="() => refresh()"
+          />
+        </UTooltip>
+      </div>
     </div>
 
     <div v-if="pending" class="flex justify-center py-8">

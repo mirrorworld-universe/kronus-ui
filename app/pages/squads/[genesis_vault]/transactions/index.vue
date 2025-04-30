@@ -1,9 +1,13 @@
 <script setup lang="ts">
+import TransactionsTable from "~/components/multisig/TransactionsTable.vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
+import { useTransactions } from "~/composables/queries/useTransactions";
 
 defineRouteRules({
   ssr: false
 });
+
+const { transactions, page, goToPage: to, totalPages, multisigAddress } = await useTransactions();
 </script>
 
 <template>
@@ -21,7 +25,13 @@ defineRouteRules({
     </template>
 
     <template #body>
-      <div>Transactions list</div>
+      <TransactionsTable :multisig-pda="multisigAddress" :transactions="transactions" />
+      <UPagination
+        :model-value="page"
+        :total="totalPages"
+        :to="to"
+        :sibling-count="2"
+      />
     </template>
   </UDashboardPanel>
 </template>

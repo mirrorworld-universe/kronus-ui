@@ -17,7 +17,7 @@ await useMultisig(multisigAddress);
 const router = useRouter();
 
 const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
-
+const isTreasuryCollapsed = ref(true);
 const links = computed(() => [[{
   label: "Dashboard",
   icon: "i-lucide-layout-dashboard",
@@ -55,6 +55,7 @@ const links = computed(() => [[{
     open.value = false;
     router.push(`/squads/${genesisVault.value}/treasury`);
   },
+  open: isTreasuryCollapsed.value,
   defaultOpen: true,
   children: treasuryAccounts.value?.map(account => ({
     label: account.name.length > 20 ? `${account.name.slice(0, 20)}...` : account.name,

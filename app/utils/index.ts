@@ -50,11 +50,11 @@ export const usdAmountFormatter = Intl.NumberFormat("en-US", {
   currency: "USD",
   currencySign: "standard",
   minimumFractionDigits: 2,
-  maximumFractionDigits: 3,
+  maximumFractionDigits: 2,
 });
 
 export const tokenAmountFormatter = Intl.NumberFormat("en-US", {
   currencySign: "standard",
   minimumFractionDigits: 2,
-  minimumSignificantDigits: 2
+  minimumSignificantDigits: 3
 });
