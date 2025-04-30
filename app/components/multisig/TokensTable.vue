@@ -19,6 +19,7 @@ type TransformedToken = {
   uiAmount: number;
   tokenAccount: string;
   tokenValue: number;
+  weight: number;
 };
 
 const route = useRoute();
@@ -36,7 +37,7 @@ const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 const { data } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCE_QUERY_KEY.value);
 const { refresh, pending } = useRefresh(VAULT_BALANCE_QUERY_KEY);
 
-const tokens = computed<TransformedToken[]>(() => (data.value || []).map(token => ({
+const tokens = computed<TransformedToken[]>(() => calculateWeights((data.value || []).map(token => ({
   name: token.name,
   symbol: token.symbol,
   balance: token.amount,
@@ -45,7 +46,7 @@ const tokens = computed<TransformedToken[]>(() => (data.value || []).map(token =
   tokenAccount: token.address,
   image: token.metadata?.image,
   tokenValue: token.tokenValue
-})));
+})), "tokenValue"));
 
 const currentVault = computed(() => (vaults.value || []).find(v => v.public_key === vaultAccount.value));
 
@@ -89,6 +90,7 @@ function handleClickReceiveToken(token: TransformedToken) {
 }
 
 const UAvatar = resolveComponent("UAvatar");
+const UProgress = resolveComponent("UProgress");
 
 const columns: TableColumn<TransformedToken>[] = [
   {
@@ -126,11 +128,7 @@ const columns: TableColumn<TransformedToken>[] = [
       return h("div", {
         class: "flex flex-col gap-1"
       }, [
-        h("div", { class: "text-(--ui-text)" }, Intl.NumberFormat("en-US", {
-          currencySign: "standard",
-          minimumFractionDigits: 2,
-          minimumSignificantDigits: 2
-        }).format(row.original.uiAmount)),
+        h("div", { class: "text-(--ui-text)" }, tokenAmountFormatter.format(row.original.uiAmount)),
       ]);
     }
   },
@@ -141,13 +139,23 @@ const columns: TableColumn<TransformedToken>[] = [
       return h("div", {
         class: "flex flex-col gap-1"
       }, [
-        h("div", { class: "text-(--ui-text)" }, Intl.NumberFormat("en-US", {
-          style: "currency",
-          currency: "USD",
-          currencySign: "standard",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 3,
-        }).format(row.original.tokenValue)),
+        h("div", { class: "text-(--ui-text)" }, usdAmountFormatter.format(row.original.tokenValue)),
+      ]);
+    }
+  },
+  {
+    accessorKey: "weight",
+    header: "Weight",
+    cell: ({ row }) => {
+      return h("div", {
+        class: "flex flex-col gap-1"
+      }, [
+        h("div", { class: "text-sm" }, percentageFormatter.format(row.getValue("weight"))),
+        h(UProgress, {
+          size: "sm",
+          color: "neutral",
+          modelValue: row.getValue("weight") as number * 100
+        })
       ]);
     }
   },
