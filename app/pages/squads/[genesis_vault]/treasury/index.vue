@@ -19,7 +19,12 @@ const multisigAddress = computed(() => multisig.value!.id);
 const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 
 const { data: vaults } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
-watchEffect(() => console.log("vaults", vaults.value));
+
+watchEffect(() => {
+  (vaults.value || []).forEach((vault) => {
+    useAsyncData(keys.tokenBalances(vault.public_key), () => $fetch(`/api/balances/${vault.public_key}`));
+  });
+});
 </script>
 
 <template>

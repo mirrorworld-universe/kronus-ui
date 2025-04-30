@@ -18,9 +18,22 @@ const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
-
 const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 const { data } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
+
+const VAULT_BALANCES_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value));
+const { data: vaultBalances } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCES_QUERY_KEY.value);
+// const { refresh } = useRefresh(VAULT_BALANCES_QUERY_KEY);
+const pending = ref(false);
+watchOnce(vaultBalances, async (balancesData) => {
+  if (!balancesData) {
+    pending.value = true;
+    await useAsyncData(keys.tokenBalances(vaultAccount.value), () => $fetch(`/api/balances/${vaultAccount.value}`));
+    pending.value = false;
+  }
+}, {
+  immediate: true
+});
 
 const vaults = computed(() => (data.value || []).map(vault => ({
   name: vault.name,
@@ -47,7 +60,10 @@ const currentVault = computed(() => vaults.value.find(v => v.address === vaultAc
     </template>
 
     <template #body>
-      <TokensTable v-if="wallet?.connected.value" :multisig-address="multisigAddress" />
+      <div v-if="pending" class="flex justify-center py-8">
+        <UIcon name="line-md:loading-twotone-loop" class="size-4" />
+      </div>
+      <TokensTable v-else-if="wallet?.connected.value" :multisig-address="multisigAddress" />
     </template>
   </UDashboardPanel>
 </template>

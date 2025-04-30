@@ -63,7 +63,7 @@ interface TokenMetadata {
   image?: string | null;
 }
 
-interface TokenBalance {
+export interface TokenBalance {
   name: string;
   symbol: string;
   mint: string;
@@ -76,6 +76,13 @@ interface TokenBalance {
     uri: string | null;
     image: string | null;
   } | null;
+}
+
+export interface TokenBalanceWithPrice extends TokenBalance {
+  tokenPrice: number;
+}
+export interface FormattedTokenBalanceWithPrice extends TokenBalanceWithPrice {
+  tokenValue: number;
 }
 
 interface KnownToken {
@@ -152,6 +159,17 @@ function decodeMetadata(buffer: Buffer): TokenMetadata {
       uri: ""
     };
   }
+}
+
+export type TokenPrices = Record<string, string>;
+export async function getTokenPrices(mints: string[]) {
+  const response = await $fetch<{
+    data: TokenPrices;
+    id: string;
+    success?: boolean;
+  }>(`https://api.sega.so/api/mint/price?mints=${mints.join(",")}`);
+
+  return response.data;
 }
 
 // Function to fetch on-chain metadata for a token mint
@@ -255,7 +273,7 @@ async function getToken2022Metadata(connection: Connection, mint: string): Promi
 }
 
 // Main function to query token balances
-export async function getTokenBalances(address: string): Promise<TokenBalance[]> {
+export async function getTokenBalances(address: string): Promise<TokenBalanceWithPrice[]> {
   const connection = connectionManager.getCurrentConnection();
   const publicKey = new PublicKey(address);
 
@@ -264,7 +282,7 @@ export async function getTokenBalances(address: string): Promise<TokenBalance[]>
   const solTokenInfo: TokenBalance = {
     name: "Solana",
     symbol: "SOL",
-    mint: "Native",
+    mint: "So11111111111111111111111111111111111111112",
     address: publicKey.toString(),
     decimals: 9,
     amount: solBalance.toString(),
@@ -346,11 +364,22 @@ export async function getTokenBalances(address: string): Promise<TokenBalance[]>
 
   // Return combined results with SOL first, filtering out NFTs (tokens with 0 decimals)
   const nonNftTokens = tokens.filter(token => token.decimals > 0);
-  return [solTokenInfo, ...nonNftTokens];
+
+  const allTokens = [solTokenInfo, ...nonNftTokens];
+
+  const allTokenMints = allTokens.map(token => token.mint);
+  const allTokenMintPrices = await getTokenPrices(allTokenMints);
+
+  const allTokensWithPrices = allTokens.map(token => ({
+    ...token,
+    tokenPrice: parseFloat(allTokenMintPrices[token.mint] || "0")
+  }));
+
+  return allTokensWithPrices;
 }
 
 // Format balances for display
-export function formatBalances(balances: TokenBalance[]): TokenBalance[] {
+export function formatBalances(balances: TokenBalanceWithPrice[]): FormattedTokenBalanceWithPrice[] {
   return balances.map(token => ({
     name: token.name,
     symbol: token.symbol,
@@ -360,6 +389,8 @@ export function formatBalances(balances: TokenBalance[]): TokenBalance[] {
     decimals: token.decimals,
     amount: token.amount,
     uiAmount: token.uiAmount,
-    tokenProgram: token.tokenProgram
+    tokenProgram: token.tokenProgram,
+    tokenPrice: token.tokenPrice,
+    tokenValue: Number(token.tokenPrice * token.uiAmount)
   }));
 }

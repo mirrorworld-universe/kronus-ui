@@ -9,10 +9,10 @@ defineProps<{
 const route = useRoute();
 const router = useRouter();
 
-const multisigParam = computed(() => route.params?.genesis_vault as unknown as string);
+const genesisVault = computed(() => route.params?.genesis_vault as unknown as string);
 const { walletAddress } = useWalletConnection();
 
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(multisigParam.value));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
 
 const { data: multisigs } = await useNuxtData<Multisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);

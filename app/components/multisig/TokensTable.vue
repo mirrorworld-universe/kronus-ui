@@ -1,41 +1,56 @@
 <script setup lang="ts">
 import { h, resolveComponent } from "vue";
 import type { TableColumn } from "@nuxt/ui";
+import { useRefresh } from "~/composables/queries/useRefresh";
+import type { FormattedTokenBalanceWithPrice } from "~/utils/token-balances";
+import type { Vault, Multisig } from "~/types/squads";
 
 const UButton = resolveComponent("UButton");
-const NuxtLink = resolveComponent("NuxtLink");
-
-const props = defineProps<{
-  multisigAddress: string;
-}>();
 
 // const { connection } = useConnection();
 // const solanaConnection = computed(() => connection.value as Connection);
 
-type TransformedVault = {
-  balance: number;
+type TransformedToken = {
   name: string;
-  address: string;
-  vault_index: number;
+  symbol: string;
+  balance: string;
+  mint: string;
+  image?: string | null;
+  uiAmount: number;
+  tokenAccount: string;
+  tokenValue: number;
 };
 
 const route = useRoute();
 
-const genesisVault = computed(() => route.params.genesis_vault as string);
 const vaultAccount = computed(() => route.params.account as string);
+const genesisVault = computed(() => route.params.genesis_vault as string);
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const VAULT_BALANCE_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value));
+const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const multisigAddress = computed(() => multisig.value!.id);
 
-const { data, error, refresh, status } = useAsyncData(keys.tokenBalances(vaultAccount.value), () => $fetch(`/api/balances/${vaultAccount.value}`));
-const pending = computed(() => status.value === "pending");
-const vaults = computed(() => (data.value || []).map(vault => ({
-  name: vault.name,
-  address: vault.public_key,
-  vault_index: vault.vault_index,
-  balance: 0,
-})).sort((a, b) => a.vault_index - b.vault_index));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 
-const currentVault = computed(() => vaults.value.find(v => v.address === vaultAccount.value));
+const { data: vaults } = useNuxtData<Vault[]>(VAULTS_QUERY_KEY.value);
+const { data } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCE_QUERY_KEY.value);
+const { refresh, pending } = useRefresh(VAULT_BALANCE_QUERY_KEY);
+
+const tokens = computed<TransformedToken[]>(() => (data.value || []).map(token => ({
+  name: token.name,
+  symbol: token.symbol,
+  balance: token.amount,
+  mint: token.mint,
+  uiAmount: token.uiAmount,
+  tokenAccount: token.address,
+  image: token.metadata?.image,
+  tokenValue: token.tokenValue
+})));
+
+const currentVault = computed(() => (vaults.value || []).find(v => v.public_key === vaultAccount.value));
 
 function truncateMiddle(input: string) {
+  if (!input) return input;
   return `${input.slice(0, 4)}...${input.slice(
     -4
   )}`;
@@ -56,23 +71,33 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-const columns: TableColumn<TransformedVault>[] = [
+const UAvatar = resolveComponent("UAvatar");
+
+const columns: TableColumn<TransformedToken>[] = [
   {
-    accessorKey: "address",
-    header: "Account",
+    accessorKey: "symbol",
+    header: "Token",
     cell: ({ row }) => {
-      return h(NuxtLink, {
-        class: "flex flex-col gap-1",
-        to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}`
-      }, () => [
-        h("div", { class: "text-neutral-50" }, row.original.name),
-        h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
-          truncateMiddle(row.getValue("address")),
-          h(UButton, {
-            icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
-            onClick: () => copyToClipboard(row.getValue("address")),
-            class: "text-neutral-200"
-          })
+      return h("div", {
+        class: "flex justify-start items-center gap-2",
+      },
+      [
+        h(UAvatar, {
+          src: row.original.symbol === "SOL" ? "/sol.png" : row.original.image,
+          alt: row.getValue("symbol")
+        }),
+        h("div", {
+          class: "flex flex-col",
+        }, [
+          h("span", { class: "leading-none text-neutral-50" }, row.getValue("symbol")),
+          h("span", { class: "leading-none flex justify-start items-center gap-1 text-xs" }, [
+            truncateMiddle(row.original.mint),
+            h(UButton, {
+              icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
+              onClick: () => copyToClipboard(row.original.mint),
+              class: " text-neutral-500 hover:text-neutral-200"
+            })
+          ])
         ])
       ]);
     }
@@ -83,23 +108,29 @@ const columns: TableColumn<TransformedVault>[] = [
     cell: ({ row }) => {
       return h("div", {
         class: "flex flex-col gap-1"
-      }, () => [
+      }, [
+        h("div", { class: "text-neutral-50" }, Intl.NumberFormat("en-US", {
+          currencySign: "standard",
+          minimumFractionDigits: 2,
+          minimumSignificantDigits: 2
+        }).format(row.original.uiAmount)),
+      ]);
+    }
+  },
+  {
+    accessorKey: "value",
+    header: "Value",
+    cell: ({ row }) => {
+      return h("div", {
+        class: "flex flex-col gap-1"
+      }, [
         h("div", { class: "text-neutral-50" }, Intl.NumberFormat("en-US", {
           style: "currency",
           currency: "USD",
           currencySign: "standard",
           minimumFractionDigits: 2,
-          minimumSignificantDigits: 3
-        }).format(row.original.balance)),
-        // TODO: Replace with list of all 3 token balances
-        // h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
-        //   truncateMiddle(row.getValue("address")),
-        //   h(UButton, {
-        //     icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
-        //     onClick: () => copyToClipboard(row.getValue("address")),
-        //     class: "text-neutral-200"
-        //   })
-        // ])
+          maximumFractionDigits: 3,
+        }).format(row.original.tokenValue)),
       ]);
     }
   },
@@ -129,21 +160,17 @@ const columns: TableColumn<TransformedVault>[] = [
       </UButton> -->
     </div>
 
-    <UCard v-if="error" color="red" class="mb-4">
-      {{ error }}
-    </UCard>
-
     <div v-if="pending" class="flex justify-center py-8">
       <UIcon name="line-md:loading-twotone-loop" class="size-4" />
     </div>
 
-    <div v-else-if="vaults.length === 0" class="text-center py-8 text-secondary-100">
+    <div v-else-if="tokens.length === 0" class="text-center py-8 text-secondary-100">
       No vaults found for this multisig
     </div>
 
     <UTable
       v-else
-      :data="vaults"
+      :data="tokens"
       :columns="columns"
       class="flex-1"
     />
