@@ -2,6 +2,8 @@
 import { useWallet } from "solana-wallets-vue";
 import CreateMultisig from "~/components/home/CreateMultisig.vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
+import { useRefresh } from "~/composables/queries/useRefresh";
+import type { Multisig } from "~/types/squads";
 
 const wallet = useWallet();
 
@@ -11,17 +13,18 @@ defineRouteRules({
 
 const { walletAddress } = useWalletConnection();
 
-const { data: multisigs, refresh } = await useFetch(`/api/multisigs/${walletAddress.value}`, {
-  immediate: true
-});
+const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
+
+const { data: multisigs } = await useNuxtData<Multisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
+const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
 const router = useRouter();
 
 watchOnce(multisigs, (newValue) => {
-  if (!!newValue && newValue?.length > 0) {
-    const defaultSquad = newValue[0];
-    if (defaultSquad) {
-      router.push(`/squads/${defaultSquad.id}/home`);
+  if (newValue && newValue.length > 0) {
+    const defaultVault = newValue[0]?.first_vault;
+    if (defaultVault) {
+      router.push(`/squads/${defaultVault}/home`);
     }
   }
 }, {
@@ -30,9 +33,9 @@ watchOnce(multisigs, (newValue) => {
 </script>
 
 <template>
-  <UDashboardPanel id="create">
+  <UDashboardPanel id="home">
     <template #header>
-      <UDashboardNavbar title="Create New Multisig" :ui="{ right: 'gap-3' }">
+      <UDashboardNavbar title="Home" :ui="{ right: 'gap-3' }">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>

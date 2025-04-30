@@ -3,7 +3,7 @@ import * as multisig from "@sqds/multisig";
 
 const { Multisig } = multisig.accounts;
 
-export async function useMultisig(multisigAddress: Ref<string>) {
+export function useMultisig(multisigAddress: Ref<string>) {
   return useAsyncData(`onchain:multisig:${multisigAddress.value}`, async () => {
     const connection = connectionManager.getCurrentConnection();
     const multisigAccount = await Multisig.fromAccountAddress(

@@ -17,6 +17,8 @@ useHead({
   }
 });
 
+const appConfig = useAppConfig();
+
 const title = "Kronus UI - Sonic SVM's Multi-sig client for Squads v4";
 const description
   = "Kronus is an open-source alternative to Squads.so, providing a comprehensive front-end client for multisig operations across Solana and other SVMs/alt-chains.";
@@ -30,7 +32,7 @@ useSeoMeta({
 </script>
 
 <template>
-  <UApp>
+  <UApp :toaster="appConfig.toaster">
     <NuxtLoadingIndicator />
 
     <NuxtLayout>

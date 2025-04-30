@@ -4,12 +4,22 @@ const toast = useToast();
 
 const open = ref(false);
 
-const activeMultisig = computed(() => route.params?.genesis_vault as unknown as string);
+const { walletAddress } = useWalletConnection();
+await useAsyncData(keys.multisigsByMember(walletAddress.value!), () => $fetch(`/api/multisigs/creator/${walletAddress.value}`));
+
+const genesisVault = computed(() => route.params?.genesis_vault as unknown as string);
+const { data: multisig } = await useAsyncData(keys.multisig(genesisVault.value), () => $fetch(`/api/multisigs/${genesisVault.value}`));
+const multisigAddress = computed(() => multisig.value!.id);
+const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddress.value), () => $fetch(`/api/vaults/${multisigAddress.value}`));
+
+const router = useRouter();
+
+const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
 
 const links = computed(() => [[{
   label: "Dashboard",
   icon: "i-lucide-layout-dashboard",
-  to: `/squads/${activeMultisig.value}/home`,
+  to: `/squads/${genesisVault.value}/home`,
   onSelect: () => {
     open.value = false;
   }
@@ -17,7 +27,7 @@ const links = computed(() => [[{
 {
   label: "Transactions",
   icon: "i-lucide-zap",
-  to: `/squads/${activeMultisig.value}/transactions`,
+  to: `/squads/${genesisVault.value}/transactions`,
   badge: "4",
   onSelect: () => {
     open.value = false;
@@ -25,20 +35,33 @@ const links = computed(() => [[{
 },
 {
   label: "Members",
-  to: `/squads/${activeMultisig.value}/members`,
+  to: `/squads/${genesisVault.value}/members`,
   icon: "i-lucide-users",
   onSelect: () => {
     open.value = false;
   }
 },
-
 {
   label: "Treasury",
   icon: "i-lucide-wallet-cards",
-  to: `/squads/${activeMultisig.value}/treasury`,
-  onSelect: () => {
+  to: `/squads/${genesisVault.value}/treasury`,
+  type: "link",
+  as: "a",
+  class: isTreasuryActiveRoute.value ? `text-(--ui-primary) hover:text-(--ui-primary) before:bg-(--ui-bg-elevated) [&>span.iconify]:text-(--ui-primary)` : undefined,
+  onSelect: (e: Event) => {
+    e.preventDefault();
     open.value = false;
-  }
+    router.push(`/squads/${genesisVault.value}/treasury`);
+  },
+  defaultOpen: true,
+  children: treasuryAccounts.value?.map(account => ({
+    label: account.name.length > 20 ? `${account.name.slice(0, 20)}...` : account.name,
+    to: `/squads/${genesisVault.value}/treasury/${account.public_key}`,
+    icon: "line-md:security",
+    onSelect: () => {
+      open.value = false;
+    }
+  })) || [],
 },
   // {
   //   label: "Members",
@@ -135,13 +158,13 @@ onMounted(async () => {
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="links[0]"
+          :items="links[0] as any"
           orientation="vertical"
         />
 
         <UNavigationMenu
           :collapsed="collapsed"
-          :items="links[1]"
+          :items="links[1] as any"
           orientation="vertical"
           class="mt-auto"
         />

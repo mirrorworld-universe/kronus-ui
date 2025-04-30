@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useRefresh } from "~/composables/queries/useRefresh";
+import type { Multisig } from "~/types/squads";
+
 defineProps<{
   collapsed?: boolean;
 }>();
@@ -7,10 +10,14 @@ const route = useRoute();
 const router = useRouter();
 
 const multisigParam = computed(() => route.params?.genesis_vault as unknown as string);
-
 const { walletAddress } = useWalletConnection();
-const { data: multisigs, refresh } = await useFetch(`/api/multisigs/creator/${walletAddress.value}`);
-const { data: currentMultisig } = await useFetch(`/api/multisigs/${multisigParam.value}`);
+
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(multisigParam.value));
+const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
+
+const { data: multisigs } = await useNuxtData<Multisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
+const { data: currentMultisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
+const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
 const CREATE_NEW_MULTISIG_ITEM = reactive({
   icon: "i-lucide-circle-plus",

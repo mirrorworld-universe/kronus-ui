@@ -4,6 +4,7 @@ import { PublicKey } from "@solana/web3.js";
 import type { Database } from "../../schema.gen";
 import { serverSupabaseClient } from "#supabase/server";
 import { solanaPublicKey, createVaultSchema } from "~~/server/validations/schemas";
+import { connectionManager } from "~/utils/connection.manager";
 
 const { Multisig } = multisig.accounts;
 
@@ -34,7 +35,12 @@ export default eventHandler(async (event) => {
     const body = await readBody(event);
 
     // Validate request body
-    const validatedData = createVaultSchema.parse(body);
+    const validatedData = createVaultSchema.parse({
+      multisig_id: multisigPublicKey.data,
+      vault_index: body.vault_index,
+      public_key: body.public_key,
+      name: body.name
+    });
     // Insert the new vault into the database
     const { data: vault, error } = await client
       .from("vaults")

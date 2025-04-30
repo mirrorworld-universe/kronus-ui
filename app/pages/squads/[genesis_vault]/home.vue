@@ -3,6 +3,7 @@
 // import CreateMultisig from "~/components/home/CreateMultisig.vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useMultisig } from "~/composables/queries/useMultisigs";
+import type { Multisig } from "~/types/squads";
 
 // const wallet = useWallet();
 
@@ -12,7 +13,9 @@ defineRouteRules({
 
 const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
-const { data: multisig } = await useFetch(`/api/multisigs/${genesisVault.value}`);
+
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const { data: multisig } = await useNuxtData<Multisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
 

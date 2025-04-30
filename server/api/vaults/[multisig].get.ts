@@ -3,6 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import type { Database } from "../../schema.gen";
 import { serverSupabaseClient } from "#supabase/server";
 import { solanaPublicKey } from "~~/server/validations/schemas";
+import { connectionManager } from "~/utils/connection.manager";
 
 const { Multisig } = multisig.accounts;
 
