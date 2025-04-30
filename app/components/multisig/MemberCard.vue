@@ -29,6 +29,9 @@ function handleClickRemoveMember(member: IMember) {
     color: "info",
   });
 }
+
+const { isMultisigMember, userCanPropose } = await useAuthorize();
+const userIsUnauthorized = computed(() => !isMultisigMember.value || !userCanPropose.value);
 </script>
 
 <template>
@@ -72,6 +75,7 @@ function handleClickRemoveMember(member: IMember) {
           size="md"
           color="neutral"
           variant="soft"
+          :disabled="userIsUnauthorized"
           @click="() => handleClickRemoveMember(member)"
         />
       </div>

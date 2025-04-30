@@ -26,7 +26,9 @@ const members = computed<IMember[]>(() => {
   }));
 });
 
-watchEffect(() => console.log("members", members.value));
+const { isMultisigMember, userCanPropose } = await useAuthorize();
+
+const userIsUnauthorized = computed(() => !isMultisigMember.value || !userCanPropose.value);
 
 const toast = useToast();
 
@@ -87,7 +89,7 @@ function handleAddMember() {
               description="Add a new member to your multisig or squad."
               :ui="{ footer: 'justify-end' }"
             >
-              <UButton leading-icon="line-md:person-add">
+              <UButton :disabled="userIsUnauthorized" leading-icon="line-md:person-add">
                 Add member
               </UButton>
 
