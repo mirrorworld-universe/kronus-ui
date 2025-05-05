@@ -47,7 +47,7 @@ export const vaults = pgTable("vaults", {
 // Transactions table
 export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
-  transactionPda: text("vault_account").notNull(),
+  transactionPda: text("transaction_pda").notNull(),
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
   vaultIndex: integer("vault_index").notNull(),
   vaultAccount: text("vault_account").notNull(),

@@ -128,31 +128,24 @@ export type Database = {
       }
       transaction_signatures: {
         Row: {
-          contact_id: string | null
+          metadata: Json
           public_key: string
           timestamp: string | null
           transaction_id: string
         }
         Insert: {
-          contact_id?: string | null
+          metadata: Json
           public_key: string
           timestamp?: string | null
           transaction_id: string
         }
         Update: {
-          contact_id?: string | null
+          metadata?: Json
           public_key?: string
           timestamp?: string | null
           transaction_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "transaction_signatures_contact_id_contacts_id_fk"
-            columns: ["contact_id"]
-            isOneToOne: false
-            referencedRelation: "contacts"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "transaction_signatures_transaction_id_transactions_id_fk"
             columns: ["transaction_id"]
@@ -166,25 +159,31 @@ export type Database = {
         Row: {
           created_at: string | null
           id: string
+          metadata: Json
           multisig_id: string
-          status: string
+          transaction_pda: string
           updated_at: string | null
+          vault_account: string
           vault_index: number
         }
         Insert: {
           created_at?: string | null
           id: string
+          metadata: Json
           multisig_id: string
-          status: string
+          transaction_pda: string
           updated_at?: string | null
+          vault_account: string
           vault_index: number
         }
         Update: {
           created_at?: string | null
           id?: string
+          metadata?: Json
           multisig_id?: string
-          status?: string
+          transaction_pda?: string
           updated_at?: string | null
+          vault_account?: string
           vault_index?: number
         }
         Relationships: [

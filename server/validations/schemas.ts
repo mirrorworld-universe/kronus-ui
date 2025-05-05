@@ -48,3 +48,30 @@ export const createVaultSchema = z.object({
   public_key: solanaPublicKey,
   name: z.string().min(1, "Name is required"),
 });
+
+export enum TransactionType {
+  Send = "Send",
+  Arbitrary = "Arbitrary"
+}
+export enum TransferType {
+  VaultToExternal = "VaultToExternal",
+  VaultToVault = "VaultToVault"
+}
+export enum TransferAssetType {
+  SOL = "SOL",
+  SPL = "SPL"
+}
+
+// Validation schema for transaction creation
+export const createTransactionSchema = z.object({
+  multisig_id: solanaPublicKey,
+  transaction_pda: solanaPublicKey,
+  vault_index: z.number().int().positive("Vault index must be positive"),
+  vault_account: solanaPublicKey,
+  metadata: z.object({
+    type: z.nativeEnum(TransactionType),
+    description: z.string().optional(),
+    transferType: z.nativeEnum(TransferType).optional(),
+    assetType: z.nativeEnum(TransferAssetType).optional()
+  })
+});
