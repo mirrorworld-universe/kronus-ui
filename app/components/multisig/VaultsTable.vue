@@ -63,9 +63,6 @@ const vaultsWithTokenBalances = computed(() => vaults.value.map((vault) => {
 
 const vaultsWithWeightedTokenBalances = computed(() => calculateWeights(vaultsWithTokenBalances.value, "__rawValue"));
 
-function getTokensBtVaultAddress(vaultAddress: string) {
-  return vaultsWithTokenBalances.value.filter(vault => vault.address === vaultAddress).map(vault => vault.tokens);
-}
 // ====== Vaults Token Balances ======
 
 function truncateMiddle(input: string) {
@@ -89,7 +86,6 @@ const copyToClipboard = async (text: string) => {
   }
 };
 
-const UAvatarGroup = resolveComponent("UAvatarGroup");
 const UAvatar = resolveComponent("UAvatar");
 const UProgress = resolveComponent("UProgress");
 

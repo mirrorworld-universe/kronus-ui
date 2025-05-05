@@ -2,6 +2,8 @@ import type { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 import type { IMultisig } from "~/types/squads";
+import type { Database } from "~~/server/schema.gen";
+import { TransactionType } from "~~/server/validations/schemas";
 
 const TRANSACTIONS_PER_PAGE = 12;
 
@@ -68,7 +70,17 @@ export async function useTransactions() {
         results.push(transaction);
       }
 
-      return results;
+      const transactionsMetadata = await $fetch<(Database["public"]["Tables"]["transactions"]["Row"])[]>(`/api/vaults/${multisigAddress.value}/transactions`);
+      const metadataCache: Record<string, (typeof transactionsMetadata)[number]> = {};
+      for (let i = 0; i < transactionsMetadata.length; i++) {
+        const tx = transactionsMetadata[i]!;
+        metadataCache[tx.transaction_pda] = tx;
+      }
+
+      return results.map(result => ({
+        ...result,
+        ...(metadataCache[result.transactionPda[0].toBase58()] ? { metadata: metadataCache[result.transactionPda[0].toBase58()] } : { metadata: { type: TransactionType.Arbitrary } })
+      }));
     } catch {
       return undefined;
     }

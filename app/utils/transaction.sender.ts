@@ -9,6 +9,7 @@ import {
   VersionedTransaction,
   ComputeBudgetProgram,
   VersionedMessage,
+  SendTransactionError,
 } from "@solana/web3.js";
 import { backOff } from "exponential-backoff";
 import type { createWalletStore } from "solana-wallets-vue";
@@ -155,8 +156,9 @@ export async function signAndSendTransaction(
           return signature;
         }
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Error processing transaction:", e);
+      if (e instanceof SendTransactionError) throw e;
       if (retries === MAX_RETRIES - 1) throw e;
     }
 

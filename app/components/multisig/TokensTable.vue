@@ -80,6 +80,7 @@ function handleClickSendToken(token: TransformedToken) {
     color: "info",
   });
 }
+
 function handleClickReceiveToken(token: TransformedToken) {
   console.log("clicked receive token", token);
   toast.add({

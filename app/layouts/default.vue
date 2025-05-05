@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { useMultisig } from "~/composables/queries/useMultisigs";
+import { useRefresh } from "~/composables/queries/useRefresh";
+import { useTransactions } from "~/composables/queries/useTransactions";
 
 const route = useRoute();
 const toast = useToast();
@@ -15,6 +17,8 @@ const multisigAddress = computed(() => multisig.value!.id);
 const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddress.value), () => $fetch(`/api/vaults/${multisigAddress.value}`));
 await useMultisig(multisigAddress);
 const router = useRouter();
+
+const { TRANSACTIONS_PAGE_QUERY_KEY } = await useTransactions();
 
 const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
 const isTreasuryCollapsed = ref(true);
@@ -116,7 +120,11 @@ const groups = computed(() => [{
   }]
 }]);
 
+const { refresh } = useRefresh(TRANSACTIONS_PAGE_QUERY_KEY);
+
 onMounted(async () => {
+  emitter.on("transactions:refresh", refresh);
+
   const cookie = useCookie("cookie-consent");
   if (cookie.value === "accepted") {
     return;
@@ -183,5 +191,6 @@ onMounted(async () => {
     <slot />
 
     <NotificationsSlideover />
+    <MultisigSendTokensModal :multisig-address="multisigAddress" />
   </UDashboardGroup>
 </template>

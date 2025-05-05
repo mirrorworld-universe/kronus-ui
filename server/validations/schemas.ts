@@ -66,7 +66,7 @@ export enum TransferAssetType {
 export const createTransactionSchema = z.object({
   multisig_id: solanaPublicKey,
   transaction_pda: solanaPublicKey,
-  vault_index: z.number().int().positive("Vault index must be positive"),
+  vault_index: z.number().int().min(0),
   vault_account: solanaPublicKey,
   metadata: z.object({
     type: z.nativeEnum(TransactionType),
