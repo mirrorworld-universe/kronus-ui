@@ -70,6 +70,7 @@ export const useWalletConnection = () => {
   });
 
   return {
+    publicKey,
     walletAddress,
     connected,
     connectWallet,

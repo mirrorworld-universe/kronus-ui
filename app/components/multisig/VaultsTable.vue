@@ -63,6 +63,9 @@ const vaultsWithTokenBalances = computed(() => vaults.value.map((vault) => {
 
 const vaultsWithWeightedTokenBalances = computed(() => calculateWeights(vaultsWithTokenBalances.value, "__rawValue"));
 
+function getTokensBtVaultAddress(vaultAddress: string) {
+  return vaultsWithTokenBalances.value.filter(vault => vault.address === vaultAddress).map(vault => vault.tokens);
+}
 // ====== Vaults Token Balances ======
 
 function truncateMiddle(input: string) {
@@ -90,7 +93,7 @@ const UAvatarGroup = resolveComponent("UAvatarGroup");
 const UAvatar = resolveComponent("UAvatar");
 const UProgress = resolveComponent("UProgress");
 
-const columns: TableColumn<TransformedVault>[] = [
+const columns = computed<TableColumn<TransformedVault>[]>(() => ([
   {
     accessorKey: "address",
     header: "Account",
@@ -121,15 +124,32 @@ const columns: TableColumn<TransformedVault>[] = [
           class: "flex items-center justify-start gap-3"
         }, [
           h("div", { class: "text-(--ui-text)" }, row.getValue("vaultTokensValue")),
-          h(UAvatarGroup, { max: 4, size: "2xs" }, () => row.original.tokens.map(token => h(UAvatar, {
-            class: "-ml-1",
-            src: token.symbol === "SOL" ? "/sol.png" : token.metadata?.image,
-            alt: token.symbol,
-          })))
+          h("div", { class: "flex items-center" }, [
+            // First 3 tokens
+            ...row.original.tokens.slice(0, 3).map(token => h(UAvatar, {
+              class: "-ml-1",
+              size: "2xs",
+              src: token.symbol === "SOL" ? "/sol.png" : token.metadata?.image,
+              alt: token.symbol,
+            })),
+            // +X indicator if there are more tokens
+            row.original.tokens.length > 3 && h("div", {
+              class: "-ml-1 text-[10px] text-neutral-500 bg-neutral-100 rounded-full roun h-5 w-5 flex justify-center items-center"
+            }, `+${row.original.tokens.length - 3}`)
+          ])
         ])
       ]);
     }
   },
+  // {
+  //   accessorKey: "tokens",
+  //   header: "Tokens",
+  //   cell: ({ row }) => h(UAvatarGroup, { max: 4, size: "2xs" }, () => row.original.tokens.map(token => h(UAvatar, {
+  //     class: "-ml-1",
+  //     src: token.symbol === "SOL" ? "/sol.png" : token.metadata?.image,
+  //     alt: token.symbol,
+  //   })))
+  // },
   {
     accessorKey: "weight",
     header: "Weight",
@@ -146,7 +166,7 @@ const columns: TableColumn<TransformedVault>[] = [
       ]);
     }
   },
-];
+]));
 const newAccountName = ref("");
 const isAddAccountModalOpen = ref(false);
 const isPending = ref(false);

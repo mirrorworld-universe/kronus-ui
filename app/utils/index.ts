@@ -58,3 +58,11 @@ export const tokenAmountFormatter = Intl.NumberFormat("en-US", {
   minimumFractionDigits: 2,
   minimumSignificantDigits: 3
 });
+
+export function range(start: number, end: number): number[] {
+  const result: number[] = [];
+  for (let i = start; i <= end; i++) {
+    result.push(i);
+  }
+  return result;
+}

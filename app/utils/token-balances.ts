@@ -14,7 +14,7 @@ import {
 
 import { connectionManager } from "@/utils/connection.manager";
 
-const METADATA_CACHE: Record<string, {
+export const METADATA_CACHE: Record<string, {
   uri: string;
   name: string;
   symbol: string;
@@ -23,7 +23,7 @@ const METADATA_CACHE: Record<string, {
   website?: string;
   attributes: any;
 }> = {
-  qPzdrTCvxK3bxoh2YoTZtDcGVgRUwm37aQcC3abFgBy: {
+  "qPzdrTCvxK3bxoh2YoTZtDcGVgRUwm37aQcC3abFgBy": {
     uri: "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry/63ae6c0a0415d480c00880e64ec8a9c3724b4e37/deployments/warp_routes/USDT/metadata.json",
     name: "Tether USD",
     symbol: "USDT",
@@ -31,7 +31,7 @@ const METADATA_CACHE: Record<string, {
     image: "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry/refs/heads/main/deployments/warp_routes/USDT/logo.svg",
     attributes: []
   },
-  HbDgpvHVxeNSRCGEUFvapCYmtYfqxexWcCbxtYecruy8: {
+  "HbDgpvHVxeNSRCGEUFvapCYmtYfqxexWcCbxtYecruy8": {
     uri: "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry/63ae6c0a0415d480c00880e64ec8a9c3724b4e37/deployments/warp_routes/USDC/metadata.json",
     name: "USD Coin",
     symbol: "USDC",
@@ -39,13 +39,22 @@ const METADATA_CACHE: Record<string, {
     image: "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry/refs/heads/main/deployments/warp_routes/USDC/logo.svg",
     attributes: []
   },
-  mrujEYaN1oyQXDHeYNxBYpxWKVkQ2XsGxfznpifu4aL: {
+  "mrujEYaN1oyQXDHeYNxBYpxWKVkQ2XsGxfznpifu4aL": {
     uri: "https://raw.githubusercontent.com/hyperlane-xyz/hyperlane-registry/63ae6c0a0415d480c00880e64ec8a9c3724b4e37/deployments/warp_routes/SONIC/metadata.json",
     name: "Sonic SVM",
     symbol: "SONIC",
     description: "SONIC is the official governance and utility token for Sonic SVM. Warp route bridged via Hyperlane.",
     image: "https://arweave.net/599UDQd5YAUfesAJCTNZ-4ELWLHX5pbid-ahpoJ-w1A",
     website: "https://sonic.game",
+    attributes: []
+  },
+  "8zAn1EQvcAntL8jZtN31t7Dag3pqHvdbCtu7AtCiw4QC": {
+    name: "Chaos Staked SONIC",
+    symbol: "sSONIC",
+    uri: "https://arweave.net/8cSVv3rNcsYFxOzh_KnDNsjE5KfdO6TzOMxGI6sdygQ",
+    image: "https://arweave.net/pEde0_R6EXxC7ID27nInhBde6FcGR95sKCBXx8brw8E",
+    website: "https://www.chaosfinance.xyz",
+    description: "sSONIC is a liquid staking token and interest-bearing while retaining full liquidity within the SONIC ecosystem.",
     attributes: []
   }
 };
@@ -231,6 +240,7 @@ async function getToken2022Metadata(connection: Connection, mint: string): Promi
       connection,
       new PublicKey(mint), // Mint Account address
     );
+
     let image = null;
 
     if (metadata) {
@@ -265,6 +275,17 @@ async function getToken2022Metadata(connection: Connection, mint: string): Promi
         image
       };
     }
+
+    const predefinedEntry = METADATA_CACHE[mint];
+    if (predefinedEntry) {
+      return {
+        name: predefinedEntry.name,
+        symbol: predefinedEntry.symbol,
+        uri: predefinedEntry.uri,
+        image: image || predefinedEntry.image
+      };
+    }
+
     return null;
   } catch (error) {
     console.warn(`Failed to fetch Token-2022 metadata for ${mint}: ${error instanceof Error ? error.message : String(error)}`);

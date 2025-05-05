@@ -1,4 +1,4 @@
-import { integer, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
+import { integer, json, pgTable, primaryKey, text, timestamp } from "drizzle-orm/pg-core";
 
 // Contacts table for address book
 export const contacts = pgTable("contacts", {
@@ -47,9 +47,11 @@ export const vaults = pgTable("vaults", {
 // Transactions table
 export const transactions = pgTable("transactions", {
   id: text("id").primaryKey(),
+  transactionPda: text("vault_account").notNull(),
   multisigId: text("multisig_id").notNull().references(() => multisigs.id),
   vaultIndex: integer("vault_index").notNull(),
-  status: text("status").notNull(),
+  vaultAccount: text("vault_account").notNull(),
+  metadata: json().notNull(),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -58,7 +60,7 @@ export const transactions = pgTable("transactions", {
 export const transactionSignatures = pgTable("transaction_signatures", {
   transactionId: text("transaction_id").notNull().references(() => transactions.id),
   publicKey: text("public_key").notNull(),
-  contactId: text("contact_id").references(() => contacts.id),
+  metadata: json().notNull(),
   timestamp: timestamp("timestamp").defaultNow(),
 }, table => ({
   pk: primaryKey({ columns: [table.transactionId, table.publicKey] }),

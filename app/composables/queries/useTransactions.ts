@@ -74,8 +74,6 @@ export async function useTransactions() {
     }
   });
 
-  watchEffect(() => console.debug("useTransactions:multisig", latestTransactions.value));
-
   const transactions = computed(() => (latestTransactions.value || []).map((transaction) => {
     return {
       ...transaction,
@@ -84,6 +82,8 @@ export async function useTransactions() {
       index: SerializableBigInt(transaction.index)
     };
   }));
+
+  watchEffect(() => console.debug("useTransactions:multisig", transactions.value));
 
   function goToPage(page: number) {
     return {
@@ -98,7 +98,8 @@ export async function useTransactions() {
     goToPage,
     transactions,
     totalPages,
-    multisigAddress
+    multisigAddress,
+    TRANSACTIONS_PAGE_QUERY_KEY
   };
 }
 

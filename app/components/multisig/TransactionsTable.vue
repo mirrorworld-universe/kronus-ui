@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
 import type * as _multisig from "@sqds/multisig";
+import ApproveButton from "./actions/ApproveButton.vue";
+import RejectButton from "./actions/RejectButton.vue";
+import ExecuteButton from "./actions/ExecuteButton.vue";
 import { NuxtLink } from "#components";
+import { useRefresh } from "~/composables/queries/useRefresh";
 
 const props = defineProps<{
   multisigPda: string;
@@ -10,6 +14,7 @@ const props = defineProps<{
     proposal: _multisig.generated.Proposal | null;
     index: bigint;
   }[];
+  transactionsQueryKey: string;
 }>();
 
 const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(props.multisigPda));
@@ -25,6 +30,9 @@ const data = computed(() => props.transactions.map((transaction) => {
   };
 }));
 
+const TRANSACTIONS_PAGE_QUERY_KEY = computed(() => props.transactionsQueryKey);
+const { pending, refresh } = useRefresh(TRANSACTIONS_PAGE_QUERY_KEY);
+
 type TransformedTransaction = {
   stale: boolean;
   status: string;
@@ -34,9 +42,8 @@ type TransformedTransaction = {
   proposal: _multisig.generated.Proposal | null;
   index: bigint;
 };
-const UButton = resolveComponent("UButton");
+// const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
-
 // 'Rejected', 'Approved', 'Executing', 'Executed', 'Cancelled'
 const statusToColor = (status: string) => {
   switch (status) {
@@ -45,13 +52,11 @@ const statusToColor = (status: string) => {
     case "Stale":
       return "neutral";
     case "Approved":
-      return "info";
+      return "warning";
     case "Executed":
       return "success";
     case "Rejected":
       return "error";
-    case "Executing":
-      return "warning";
     default:
       return "neutral";
   }
@@ -97,7 +102,45 @@ const columns: TableColumn<TransformedTransaction>[] = [
       class: "rounded-full",
       variant: "subtle",
       color: statusToColor(row.getValue("status"))
-    }, () => row.getValue("status"))
+    }, () => row.getValue("status") === "Approved" ? "Ready" : row.getValue("status"))
+  },
+  {
+    accessorKey: "actions",
+    header: "Actions",
+    cell: ({ row }) => {
+      return h("div", {
+        class: "flex justify-start items-center gap-3",
+      },
+      [
+        h(ApproveButton, {
+          color: "neutral",
+          variant: "solid",
+          proposal: row.original.proposal!,
+          multisigPda: props.multisigPda,
+          transactionIndex: Number(row.original.index),
+          proposalStatus: row.original.status,
+          transactionsPageQuery: props.transactionsQueryKey
+        }),
+        h(RejectButton, {
+          color: "neutral",
+          variant: "soft",
+          proposal: row.original.proposal!,
+          multisigPda: props.multisigPda,
+          transactionIndex: Number(row.original.index),
+          proposalStatus: row.original.status,
+          transactionsPageQuery: props.transactionsQueryKey
+        }),
+        h(ExecuteButton, {
+          color: row.original.status === "Approved" ? "success" : "neutral",
+          variant: "ghost",
+          proposal: row.original.proposal!,
+          multisigPda: props.multisigPda,
+          transactionIndex: Number(row.original.index),
+          proposalStatus: row.original.status,
+          transactionsPageQuery: props.transactionsQueryKey
+        }),
+      ]);
+    }
   },
 ];
 </script>
@@ -109,6 +152,15 @@ const columns: TableColumn<TransformedTransaction>[] = [
         <h2 class="text-xl font-semibold">
           Transactions
         </h2>
+
+        <UButton
+          icon="i-lucide-refresh-cw"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          :loading="pending"
+          @click="() => refresh()"
+        />
       </div>
     </div>
 

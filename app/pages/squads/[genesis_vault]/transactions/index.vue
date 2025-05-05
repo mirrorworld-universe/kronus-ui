@@ -7,7 +7,7 @@ defineRouteRules({
   ssr: false
 });
 
-const { transactions, page, goToPage: to, totalPages, multisigAddress } = await useTransactions();
+const { transactions, page, goToPage: to, totalPages, multisigAddress, TRANSACTIONS_PAGE_QUERY_KEY } = await useTransactions();
 </script>
 
 <template>
@@ -25,7 +25,7 @@ const { transactions, page, goToPage: to, totalPages, multisigAddress } = await 
     </template>
 
     <template #body>
-      <TransactionsTable :multisig-pda="multisigAddress" :transactions="transactions" />
+      <TransactionsTable :multisig-pda="multisigAddress" :transactions="transactions" :transactions-query-key="TRANSACTIONS_PAGE_QUERY_KEY" />
       <UPagination
         :model-value="page"
         :total="totalPages"
