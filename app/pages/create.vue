@@ -9,6 +9,11 @@ defineRouteRules({
 definePageMeta({
   layout: "create"
 });
+
+const router = useRouter();
+function handleCancel() {
+  router.push(`/`);
+}
 </script>
 
 <template>
@@ -26,7 +31,7 @@ definePageMeta({
     </template>
 
     <template #body>
-      <CreateMultisig />
+      <CreateMultisig @cancel="handleCancel" />
     </template>
   </UDashboardPanel>
 </template>

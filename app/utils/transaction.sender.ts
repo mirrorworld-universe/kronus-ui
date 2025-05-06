@@ -2,6 +2,7 @@ import type {
   Connection,
   Keypair,
   SignatureStatus,
+
   TransactionInstruction,
 } from "@solana/web3.js";
 import {
@@ -10,6 +11,7 @@ import {
   ComputeBudgetProgram,
   VersionedMessage,
   SendTransactionError,
+  LAMPORTS_PER_SOL,
 } from "@solana/web3.js";
 import { backOff } from "exponential-backoff";
 import type { createWalletStore } from "solana-wallets-vue";
@@ -27,6 +29,13 @@ export type TxStatusUpdate = {
   result?: SignatureStatus;
 };
 
+export class SimulationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "SimulationError";
+  }
+}
+
 export async function getComputeUnitsEstimate(
   transaction: Transaction | VersionedTransaction,
   connection: Connection
@@ -38,8 +47,35 @@ export async function getComputeUnitsEstimate(
         VersionedMessage.deserialize(transaction.serializeMessage())
       );
 
-  const simulation = await connection.simulateTransaction(versionedTransaction);
-  return (simulation.value?.unitsConsumed || 0) * 1.2;
+  const result = await connection.simulateTransaction(versionedTransaction, {
+    commitment: "confirmed"
+  });
+
+  if (result.value.err) {
+    const logs = result.value.logs || [];
+    const insufficientFunds = logs.find(log =>
+      log.toLowerCase().includes("insufficient lamports")
+    );
+    if (insufficientFunds) {
+      // Example error message: Transfer: insufficient lamports 78540160, need 132000000
+      const match = insufficientFunds.match(/need (\d+)/);
+      const neededLamports = match ? parseInt(match[1]!, 10) : 0;
+      const neededSOL = Intl.NumberFormat("en-US", {
+        maximumFractionDigits: 6,
+      }).format(neededLamports / LAMPORTS_PER_SOL);
+      return [
+        null,
+        new SimulationError(
+          "You have insufficient SOL in your account to complete this transaction. You need at least "
+          + neededSOL
+          + " SOL to complete the transaction."
+        ),
+      ] as const;
+    }
+    return [null, new SimulationError("Transaction failed to simulate")] as const;
+  } else {
+    return [(result.value?.unitsConsumed || 0) * 1.2, null] as const;
+  }
 }
 
 export async function getTransactionPriorityFeeEstimate(connection: Connection) {
@@ -90,7 +126,10 @@ export async function signAndSendTransaction(
   }
 
   // Estimate compute units
-  const computeUnitsEstimate = await getComputeUnitsEstimate(txn, connection);
+  const [computeUnitsEstimate, error] = await getComputeUnitsEstimate(txn, connection);
+
+  if (error) throw error;
+
   const priorityFee = await getTransactionPriorityFeeEstimate(connection);
 
   // Prepend compute budget only if it's a legacy Transaction

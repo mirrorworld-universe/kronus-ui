@@ -1,23 +1,20 @@
 <script setup lang="ts">
-import { useRefresh } from "~/composables/queries/useRefresh";
+import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import type { IMultisig } from "~/types/squads";
 
 defineProps<{
   collapsed?: boolean;
 }>();
 
-const route = useRoute();
 const router = useRouter();
 
-const genesisVault = computed(() => route.params?.genesis_vault as unknown as string);
-const { walletAddress } = useWalletConnection();
-
+const { genesisVault } = await useGenesisVault();
+const { walletAddress } = await useWalletConnection();
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
 
 const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
 const { data: currentMultisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
-const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
 const CREATE_NEW_MULTISIG_ITEM = reactive({
   icon: "i-lucide-circle-plus",
@@ -34,50 +31,50 @@ const items = computed(() => {
     ...multisig,
     label: multisig.name,
     async onSelect() {
-      await router.push(`/squads/${multisig.id}/home`);
+      await router.push(`/squads/${multisig.first_vault}/home`);
     }
   })), [CREATE_NEW_MULTISIG_ITEM]];
 });
-
-emitter.on("multisigs:refresh", refresh);
 </script>
 
 <template>
-  <UButton
-    v-if="!multisigsList.length"
-    v-bind="{
-      ...CREATE_NEW_MULTISIG_ITEM
-    }"
-    color="neutral"
-    variant="outline"
-    block
-    :square="collapsed"
-    class="data-[state=open]:bg-(--ui-bg-elevated) justify-start px-3"
-    :class="[!collapsed && 'py-2']"
-  >
-    Create Squad
-  </UButton>
-  <UDropdownMenu
-    v-else
-    :items="items"
-    :content="{ align: 'center', collisionPadding: 12 }"
-    :ui="{ content: collapsed ? 'w-40' : 'w-(--reka-dropdown-menu-trigger-width)' }"
-  >
+  <div class="w-full">
     <UButton
+      v-if="!multisigsList.length"
       v-bind="{
-        ...selectedMultisig,
-        label: collapsed ? undefined : selectedMultisig?.name,
-        trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
+        ...CREATE_NEW_MULTISIG_ITEM
       }"
       color="neutral"
-      variant="ghost"
+      variant="outline"
       block
       :square="collapsed"
-      class="data-[state=open]:bg-(--ui-bg-elevated)"
+      class="data-[state=open]:bg-(--ui-bg-elevated) justify-start px-3"
       :class="[!collapsed && 'py-2']"
-      :ui="{
-        trailingIcon: 'text-(--ui-text-dimmed)'
-      }"
-    />
-  </UDropdownMenu>
+    >
+      Create Squad
+    </UButton>
+    <UDropdownMenu
+      v-else
+      :items="items"
+      :content="{ align: 'center', collisionPadding: 12 }"
+      :ui="{ content: collapsed ? 'w-40' : 'w-(--reka-dropdown-menu-trigger-width)' }"
+    >
+      <UButton
+        v-bind="{
+          ...selectedMultisig,
+          label: collapsed ? undefined : selectedMultisig?.name,
+          trailingIcon: collapsed ? undefined : 'i-lucide-chevrons-up-down'
+        }"
+        color="neutral"
+        variant="ghost"
+        block
+        :square="collapsed"
+        class="data-[state=open]:bg-(--ui-bg-elevated)"
+        :class="[!collapsed && 'py-2']"
+        :ui="{
+          trailingIcon: 'text-(--ui-text-dimmed)'
+        }"
+      />
+    </UDropdownMenu>
+  </div>
 </template>

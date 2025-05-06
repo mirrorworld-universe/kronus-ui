@@ -147,7 +147,7 @@ const onSubmit = handleSubmit(async (formValues) => {
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigAddress);
-          router.push(`/accounts/${multisigAddress}`);
+          router.push(`/squads/${firstVaultPublicKey.toBase58()}/treasury`);
         }
       },
       {
@@ -233,6 +233,9 @@ const emit = defineEmits(["cancel", "created"]);
             <div class="text-secondary-100">
               Give your Multisig a name. You can always adjust the Multisig details later
             </div>
+            <NuxtLink to="/import" class="text-xs underline decoration-dashed transition-colors text-primary-100 underline-offset-3 hover:text-primary flex items-center gap-1">
+              Already have a multisig? Import it instead.
+            </NuxtLink>
           </div>
           <div />
           <UCard variant="soft" class="w-full">

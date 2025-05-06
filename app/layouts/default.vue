@@ -23,7 +23,9 @@ const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddres
 
 await useMultisig(multisigAddress);
 
-const { TRANSACTIONS_PAGE_QUERY_KEY } = await useTransactions();
+const { TRANSACTIONS_PAGE_QUERY_KEY, transactions } = await useTransactions();
+
+const pendingTransactionsCount = computed(() => transactions.value.filter(tx => tx.proposal?.status.__kind === "Active").length);
 
 const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
 const isTreasuryCollapsed = ref(true);
@@ -39,7 +41,7 @@ const links = computed(() => [[{
   label: "Transactions",
   icon: "i-lucide-zap",
   to: `/squads/${genesisVault.value}/transactions`,
-  badge: "4",
+  badge: pendingTransactionsCount.value,
   onSelect: () => {
     open.value = false;
   }
@@ -156,47 +158,55 @@ onMounted(async () => {
 </script>
 
 <template>
-  <UDashboardGroup unit="rem">
-    <UDashboardSidebar
-      id="default"
-      v-model:open="open"
-      collapsible
-      resizable
-      class="bg-(--ui-bg-elevated)/25"
-      :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
-    >
-      <template #header="{ collapsed }">
-        <MultisigsMenu :collapsed="collapsed" />
+  <Suspense>
+    <UDashboardGroup unit="rem">
+      <UDashboardSidebar
+        id="default"
+        v-model:open="open"
+        collapsible
+        resizable
+        class="bg-(--ui-bg-elevated)/25"
+        :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
+      >
+        <template #header="{ collapsed }">
+          <MultisigsMenu :collapsed="collapsed" />
+        </template>
+
+        <template #default="{ collapsed }">
+          <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
+
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="links[0] as any"
+            orientation="vertical"
+          />
+
+          <UNavigationMenu
+            :collapsed="collapsed"
+            :items="links[1] as any"
+            orientation="vertical"
+            class="mt-auto"
+          />
+        </template>
+
+        <template #footer="{ collapsed }">
+          <UserMenu :collapsed="collapsed" />
+        </template>
+      </UDashboardSidebar>
+
+      <UDashboardSearch :groups="groups" />
+
+      <slot />
+
+      <template v-if="multisigAddress">
+        <MultisigSendTokensModal :multisig-address="multisigAddress" />
       </template>
+    </UDashboardGroup>
 
-      <template #default="{ collapsed }">
-        <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[0] as any"
-          orientation="vertical"
-        />
-
-        <UNavigationMenu
-          :collapsed="collapsed"
-          :items="links[1] as any"
-          orientation="vertical"
-          class="mt-auto"
-        />
-      </template>
-
-      <template #footer="{ collapsed }">
-        <UserMenu :collapsed="collapsed" />
-      </template>
-    </UDashboardSidebar>
-
-    <UDashboardSearch :groups="groups" />
-
-    <slot />
-
-    <template v-if="multisigAddress">
-      <MultisigSendTokensModal :multisig-address="multisigAddress" />
+    <template #fallback>
+      <div class="h-full flex justify-center items-center">
+        <UIcon name="svg-spinners:bars-rotate-fade" />
+      </div>
     </template>
-  </UDashboardGroup>
+  </Suspense>
 </template>

@@ -35,8 +35,18 @@ useSeoMeta({
   <UApp :toaster="appConfig.toaster">
     <NuxtLoadingIndicator />
 
-    <NuxtLayout>
-      <NuxtPage />
-    </NuxtLayout>
+    <Suspense>
+      <NuxtLayout>
+        <NuxtPage />
+      </NuxtLayout>
+      <template #fallback>
+        <div class="h-screen flex flex-col justify-center items-center gap-5">
+          <UIcon name="svg-spinners:bars-rotate-fade" class="size-5" />
+          <div class="text-xs">
+            Loading
+          </div>
+        </div>
+      </template>
+    </Suspense>
   </UApp>
 </template>

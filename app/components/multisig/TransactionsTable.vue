@@ -147,6 +147,24 @@ const columns: TableColumn<TransformedTransaction>[] = [
       ]);
     }
   },
+  {
+    id: "expand",
+    cell: ({ row }) =>
+      h(UButton, {
+        "color": "neutral",
+        "variant": "ghost",
+        "icon": "i-lucide-chevron-down",
+        "square": true,
+        "aria-label": "Expand",
+        "ui": {
+          leadingIcon: [
+            "transition-transform",
+            row.getIsExpanded() ? "duration-200 rotate-180" : ""
+          ]
+        },
+        "onClick": () => row.toggleExpanded()
+      })
+  },
 ];
 </script>
 
@@ -182,6 +200,10 @@ const columns: TableColumn<TransformedTransaction>[] = [
       :data="data"
       class="flex-1"
       :columns="columns"
-    />
+    >
+      <template #expanded="{ row }">
+        <pre>{{ row.original }}</pre>
+      </template>
+    </UTable>
   </div>
 </template>

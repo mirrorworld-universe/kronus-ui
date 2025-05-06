@@ -49,6 +49,47 @@ export const createVaultSchema = z.object({
   name: z.string().min(1, "Name is required"),
 });
 
+// Validation schema for multisig creation
+export const importVaultsSchema = z.array(
+  z.object({
+    multisig_id: solanaPublicKey,
+    vault_index: z.number().int().min(0),
+    public_key: solanaPublicKey,
+    name: z.string().min(1, "Name is required"),
+  })
+);
+
+// Validation schema for multisig import
+export const importMultisigSchema = z.object({
+  address: solanaPublicKey,
+  creator_address: solanaPublicKey,
+  create_key: solanaPublicKey,
+  first_vault: solanaPublicKey,
+  name: z.string().min(1, "Name is required"),
+  description: z.string().optional(),
+  threshold: z.number().int().positive("Threshold must be positive"),
+  members: z.array(
+    z.object({
+      address: solanaPublicKey,
+      label: z.string().optional(),
+    })
+  ).min(1, "At least one member is required"),
+  vaults: importVaultsSchema
+}).refine((data) => {
+  // Ensure threshold is not greater than number of members
+  return data.threshold <= data.members.length;
+}, {
+  message: "Threshold cannot be greater than number of members",
+  path: ["threshold"]
+}).refine((data) => {
+  // Ensure all member addresses are unique
+  const addresses = data.members.map(m => m.address);
+  return new Set(addresses).size === addresses.length;
+}, {
+  message: "Member addresses must be unique",
+  path: ["members"]
+});
+
 export enum TransactionType {
   Send = "Send",
   Arbitrary = "Arbitrary"

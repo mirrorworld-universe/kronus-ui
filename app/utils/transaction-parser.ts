@@ -25,9 +25,8 @@ export function classifyAndExtractTransaction(
   const status = tx.proposal!.status.__kind;
   const approvals = tx.proposal!.approved.length;
   const rejections = tx.proposal!.rejected.length;
-  const _timestamp = tx.proposal!.status!.timestamp;
 
-  const timestamp = parseInt(_timestamp, 16) * 1000;
+  const timestamp = JSON.parse(JSON.stringify(tx.proposal!.status)).timestamp;
   const date = new Date(timestamp);
   const iso = date.toISOString();
 

@@ -46,24 +46,31 @@ const currentVault = computed(() => vaults.value.find(v => v.address === vaultAc
 </script>
 
 <template>
-  <UDashboardPanel :id="`treasury-${currentVault?.address}`">
-    <template #header>
-      <UDashboardNavbar :title="`Treasury – ${currentVault?.name}`" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+  <Suspense>
+    <UDashboardPanel :id="`treasury-${currentVault?.address}`">
+      <template #header>
+        <UDashboardNavbar :title="`Treasury – ${currentVault?.name}`" :ui="{ right: 'gap-3' }">
+          <template #leading>
+            <UDashboardSidebarCollapse />
+          </template>
 
-        <template #right>
-          <WalletConnectButton />
-        </template>
-      </UDashboardNavbar>
-    </template>
+          <template #right>
+            <WalletConnectButton />
+          </template>
+        </UDashboardNavbar>
+      </template>
 
-    <template #body>
-      <div v-if="pending" class="flex justify-center py-8">
-        <UIcon name="line-md:loading-twotone-loop" class="size-4" />
+      <template #body>
+        <div v-if="pending" class="flex justify-center py-8">
+          <UIcon name="line-md:loading-twotone-loop" class="size-4" />
+        </div>
+        <TokensTable v-else-if="wallet?.connected.value" :multisig-address="multisigAddress" />
+      </template>
+    </UDashboardPanel>
+    <template #fallback>
+      <div class="h-full flex justify-center items-center">
+        <UIcon name="svg-spinners:bars-rotate-fade" />
       </div>
-      <TokensTable v-else-if="wallet?.connected.value" :multisig-address="multisigAddress" />
     </template>
-  </UDashboardPanel>
+  </Suspense>
 </template>

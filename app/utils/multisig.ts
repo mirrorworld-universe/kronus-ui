@@ -125,12 +125,15 @@ export async function listMultisigVaults(
   try {
     const vaultIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const vaultIndexPromises = vaultIndices.map((index) => {
-      const [vaultPublicKey] = multisig.getVaultPda({
+      const [vaultAccount] = multisig.getVaultPda({
         index: index,
         multisigPda: multisigAddress,
         programId: SQUADS_V4_PROGRAM_ID,
       });
-      return vaultPublicKey;
+      return {
+        vaultAccount,
+        vaultIndex: index
+      };
     });
     const vaults = await Promise.all(vaultIndexPromises);
     return vaults;

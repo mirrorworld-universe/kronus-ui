@@ -4,7 +4,10 @@ type Events = {
   "multisigs:refresh"?: undefined;
   "transactions:refresh"?: undefined;
   "treasury:refresh"?: undefined;
-  "send:open"?: undefined;
+  "send:open": {
+    vaultAccount: string;
+    tokenSymbol: string;
+  };
   "send:close"?: undefined;
 };
 

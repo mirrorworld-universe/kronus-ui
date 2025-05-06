@@ -20,10 +20,6 @@ const isAuthorized = computed(() => isMultisigMember.value && userCanPropose.val
 
 const open = ref(false);
 
-emitter.on("send:open", () => {
-  if (!isAuthorized.value) return;
-  open.value = true;
-});
 emitter.on("send:close", () => {
   open.value = false;
 });
@@ -95,6 +91,24 @@ const sendTokenPayload = computed(() => ({
   note: sendTokenData.note,
   token: sendingVaultTokenValue
 }));
+
+emitter.on("send:open", async ({ vaultAccount, tokenSymbol }) => {
+  if (!isAuthorized.value) return;
+
+  const targetSendingVault = sendingItems.value.find(item => item.value === vaultAccount);
+  if (targetSendingVault) {
+    sendingValue.value = targetSendingVault;
+  }
+
+  const targetSendingVaultToken = sendingVaultTokensList.value.find(item => item.symbol === tokenSymbol);
+  if (targetSendingVaultToken) {
+    sendingVaultTokenValue.value = targetSendingVaultToken;
+  }
+
+  await nextTick();
+
+  open.value = true;
+});
 
 const pending = ref(false);
 async function proposeSendTokenTransaction() {
@@ -217,6 +231,7 @@ async function proposeSendTokenTransaction() {
     });
   } finally {
     pending.value = false;
+    toast.clear();
   }
 }
 </script>

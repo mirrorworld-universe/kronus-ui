@@ -11,27 +11,34 @@ const { transactions, page, goToPage: to, totalPages, multisigAddress, TRANSACTI
 </script>
 
 <template>
-  <UDashboardPanel id="transactions">
-    <template #header>
-      <UDashboardNavbar title="Transactions" :ui="{ right: 'gap-3' }">
-        <template #leading>
-          <UDashboardSidebarCollapse />
-        </template>
+  <Suspense>
+    <UDashboardPanel id="transactions">
+      <template #header>
+        <UDashboardNavbar title="Transactions" :ui="{ right: 'gap-3' }">
+          <template #leading>
+            <UDashboardSidebarCollapse />
+          </template>
 
-        <template #right>
-          <WalletConnectButton />
-        </template>
-      </UDashboardNavbar>
-    </template>
+          <template #right>
+            <WalletConnectButton />
+          </template>
+        </UDashboardNavbar>
+      </template>
 
-    <template #body>
-      <TransactionsTable :multisig-pda="multisigAddress" :transactions="transactions" :transactions-query-key="TRANSACTIONS_PAGE_QUERY_KEY" />
-      <UPagination
-        :model-value="page"
-        :total="totalPages"
-        :to="to"
-        :sibling-count="2"
-      />
+      <template #body>
+        <TransactionsTable :multisig-pda="multisigAddress" :transactions="transactions" :transactions-query-key="TRANSACTIONS_PAGE_QUERY_KEY" />
+        <UPagination
+          :model-value="page"
+          :total="totalPages"
+          :to="to"
+          :sibling-count="2"
+        />
+      </template>
+    </UDashboardPanel>
+    <template #fallback>
+      <div class="h-full flex justify-center items-center">
+        <UIcon name="svg-spinners:bars-rotate-fade" />
+      </div>
     </template>
-  </UDashboardPanel>
+  </Suspense>
 </template>

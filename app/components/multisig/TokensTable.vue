@@ -73,11 +73,9 @@ const copyToClipboard = async (text: string) => {
 };
 
 function handleClickSendToken(token: TransformedToken) {
-  console.log("clicked send token", token);
-  toast.add({
-    title: "Sending tokens coming soon",
-    icon: "line-md:loading-twotone-loop",
-    color: "info",
+  emitter.emit("send:open", {
+    vaultAccount: vaultAccount.value,
+    tokenSymbol: token.symbol
   });
 }
 

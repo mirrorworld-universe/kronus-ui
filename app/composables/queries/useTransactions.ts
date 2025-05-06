@@ -100,17 +100,20 @@ export async function useTransactions() {
   // const parsedTransactions = computed(() => classifyAndExtractTransaction(transactions.value));
 
   watchEffect(() => console.debug("useTransactions:multisig", transactions.value));
-  // watchEffect(() => {
-  //   try {
-  //     // const parsedTransactions = transactions.value.map(tx => ({
-  //     //   ...tx,
-  //     //   metadata: classifyAndExtractTransaction(tx)
-  //     // }));
-  //     // console.debug("parsedTransactions", parsedTransactions);
-  //   } catch (error: any) {
-  //     // console.error("Error parsing transactions", error);
-  //   }
-  // });
+  watchEffect(() => {
+    try {
+      const parsedTransactions = transactions.value.map(tx => ({
+        ...tx,
+        metadata: {
+          ...tx.metadata,
+          ...classifyAndExtractTransaction(tx)
+        }
+      }));
+      console.debug("parsedTransactions", parsedTransactions);
+    } catch (error: any) {
+      console.error("Error parsing transactions", error);
+    }
+  });
 
   function goToPage(page: number) {
     return {
