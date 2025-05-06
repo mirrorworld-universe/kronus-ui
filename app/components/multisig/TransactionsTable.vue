@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { TableColumn } from "@nuxt/ui";
 import type * as _multisig from "@sqds/multisig";
+import type { UnwrapRef } from "vue";
 import ApproveButton from "./actions/ApproveButton.vue";
 import RejectButton from "./actions/RejectButton.vue";
 import ExecuteButton from "./actions/ExecuteButton.vue";
 import { NuxtLink } from "#components";
 import { useRefresh } from "~/composables/queries/useRefresh";
+import type { useTransactions } from "~/composables/queries/useTransactions";
+import { TransactionType, TransferAssetType } from "~~/server/validations/schemas";
 
 const props = defineProps<{
   multisigPda: string;
@@ -35,17 +38,37 @@ const data = computed(() => props.transactions.map((transaction) => {
 const TRANSACTIONS_PAGE_QUERY_KEY = computed(() => props.transactionsQueryKey);
 const { pending, refresh } = useRefresh(TRANSACTIONS_PAGE_QUERY_KEY);
 
-type TransformedTransaction = {
-  stale: boolean;
-  status: string;
-  transactionPda: string;
-  proposalPda: string;
-  transaction: _multisig.generated.VaultTransaction | null;
-  proposal: _multisig.generated.Proposal | null;
-  index: bigint;
-};
+const route = useRoute();
+const pageParam = computed(() => route.query.page as string);
+const page = computed(() => {
+  let _page = pageParam.value ? parseInt(pageParam.value, 10) : 1;
+  if (_page < 1) {
+    _page = 1;
+  }
+  return _page;
+});
+
+watch(page, (newVal, oldVal) => {
+  if (newVal !== oldVal) {
+    refresh();
+  }
+});
+
+// type TransformedTransaction = {
+//   stale: boolean;
+//   status: string;
+//   transactionPda: string;
+//   proposalPda: string;
+//   metadata: UnwrapRef<Awaited<ReturnType<typeof useTransactions>>["parsedTransactions"]>[number];
+//   transaction: _multisig.generated.VaultTransaction | null;
+//   proposal: _multisig.generated.Proposal | null;
+//   index: bigint;
+// };
+
+type TransformedTransaction = UnwrapRef<Awaited<ReturnType<typeof useTransactions>>["parsedTransactions"]>[number];
 // const UButton = resolveComponent("UButton");
 const UBadge = resolveComponent("UBadge");
+const UAvatar = resolveComponent("UAvatar");
 // 'Rejected', 'Approved', 'Executing', 'Executed', 'Cancelled'
 const statusToColor = (status: string) => {
   switch (status) {
@@ -63,6 +86,18 @@ const statusToColor = (status: string) => {
       return "neutral";
   }
 };
+function getVaultTransactionToken(transaction: TransformedTransaction, assetTransferType: TransferAssetType) {
+  const isSOL = assetTransferType === TransferAssetType.SOL;
+
+  const splTokenAccountIndex = 5;
+  const splTokenMintAccount = transaction.transaction!.message.accountKeys[splTokenAccountIndex]?.toBase58();
+
+  const vaultAccount = transaction.transaction!.message.accountKeys[1]!;
+  const { data: vaultBalanceQuery } = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vaultAccount?.toBase58()));
+  if (vaultBalanceQuery.value) {
+    return isSOL ? vaultBalanceQuery.value.find(token => token.symbol === "SOL") : vaultBalanceQuery.value.find(token => token.mint === splTokenMintAccount);
+  }
+}
 
 const columns: TableColumn<TransformedTransaction>[] = [
   {
@@ -71,16 +106,49 @@ const columns: TableColumn<TransformedTransaction>[] = [
     cell: ({ row }) => row.original.transaction?.index
   },
   {
-    accessorKey: "transactionPda",
-    header: "Transaction",
+    accessorKey: "metadata",
+    header: undefined,
     cell: ({ row }) => {
-      return h(NuxtLink, {
-        to: createSolanaExplorerUrl(row.getValue("transactionPda")),
-        target: "_blank",
-        class: "flex justify-start items-center gap-2 underline decoration-dotted transition-colors underline-offset-3 hover:text-primary",
-      }, () => [
-        h("pre", truncateMiddle(row.getValue("transactionPda")))
+      const isSendTransaction = row.original.__metadata.type === TransactionType.Send;
+      return h("div", {
+        class: "flex justify-start items-center gap-4"
+      }, [
+        h(UButton, {
+          icon: isSendTransaction ? "solar:arrow-right-up-linear" : "solar:code-bold-duotone",
+          variant: "soft",
+          size: "sm",
+          color: isSendTransaction ? "success" : "neutral",
+        }),
+        h("span", {
+
+        }, row.original.__metadata.type)
       ]);
+    }
+  },
+  {
+    accessorKey: "transactionPda",
+    header: "Detail",
+    cell: ({ row }) => {
+      const isSendTransaction = row.original.__metadata.type === TransactionType.Send;
+      const isSOL = row.original.__metadata.assetType === TransferAssetType.SOL;
+
+      return h("div", {
+        class: "flex justify-start items-center gap-4"
+      }, isSendTransaction
+        ? [
+            h(UAvatar, {
+              src: isSOL ? "/sol.png" : getVaultTransactionToken(row.original, row.original.__metadata.assetType!)?.metadata?.image,
+              variant: "soft",
+              size: "xs",
+              color: isSendTransaction ? "success" : "neutral",
+            }),
+            h("span", [
+              isSOL
+                ? tokenAmountFormatter.format(parseSOLTransferInstruction(JSON.parse(JSON.stringify(row.original.transaction!.message)) as any as SolanaTransactionMessage).amountInSOL)
+                : tokenAmountFormatter.format(parseSPLTokenTransferInstruction(JSON.parse(JSON.stringify(row.original.transaction!.message)) as any as SolanaTransactionMessage).amount / 10 ** (getVaultTransactionToken(row.original, row.original.__metadata.assetType!)?.decimals || 1))
+            ])
+          ]
+        : []);
     }
   },
   {
@@ -120,7 +188,7 @@ const columns: TableColumn<TransformedTransaction>[] = [
           proposal: row.original.proposal!,
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
-          proposalStatus: row.original.status,
+          proposalStatus: row.original.proposal!.status.__kind,
           transactionsPageQuery: props.transactionsQueryKey,
           class: "cursor-pointer"
         }),
@@ -130,17 +198,17 @@ const columns: TableColumn<TransformedTransaction>[] = [
           proposal: row.original.proposal!,
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
-          proposalStatus: row.original.status,
+          proposalStatus: row.original.proposal!.status.__kind,
           transactionsPageQuery: props.transactionsQueryKey,
           class: "cursor-pointer"
         }),
         h(ExecuteButton, {
-          color: row.original.status === "Approved" ? "success" : "neutral",
+          color: row.original.proposal!.status.__kind === "Approved" ? "success" : "neutral",
           variant: "ghost",
           proposal: row.original.proposal!,
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
-          proposalStatus: row.original.status,
+          proposalStatus: row.original.proposal!.status.__kind,
           transactionsPageQuery: props.transactionsQueryKey,
           class: "cursor-pointer"
         }),
@@ -156,6 +224,7 @@ const columns: TableColumn<TransformedTransaction>[] = [
         "icon": "i-lucide-chevron-down",
         "square": true,
         "aria-label": "Expand",
+        "class": "cursor-pointer",
         "ui": {
           leadingIcon: [
             "transition-transform",
@@ -202,7 +271,9 @@ const columns: TableColumn<TransformedTransaction>[] = [
       :columns="columns"
     >
       <template #expanded="{ row }">
-        <pre>{{ row.original }}</pre>
+        <UCard variant="soft">
+          <pre>{{ row }}</pre>
+        </UCard>
       </template>
     </UTable>
   </div>

@@ -100,7 +100,8 @@ const executeTrasnsaction = async () => {
         }).compileToV0Message(resp.lookupTableAccounts)
       );
 
-      const computeUnitsEstimate = await getComputeUnitsEstimate(executeVaultTransactionPayload, connection);
+      const [computeUnitsEstimate, error] = await getComputeUnitsEstimate(executeVaultTransactionPayload, connection);
+      if (error) throw new Error("Could not get compute unit estimate");
       const computeBudgetIx = [
         ComputeBudgetProgram.setComputeUnitLimit({
           units: computeUnitsEstimate,
@@ -136,7 +137,8 @@ const executeTrasnsaction = async () => {
         }).compileToV0Message()
       );
 
-      const computeUnitsEstimate = await getComputeUnitsEstimate(executeConfigTransaction, connection);
+      const [computeUnitsEstimate, error] = await getComputeUnitsEstimate(executeConfigTransaction, connection);
+      if (error) throw new Error("Could not get compute unit estimate");
       const computeBudgetIx = [
         ComputeBudgetProgram.setComputeUnitLimit({
           units: computeUnitsEstimate,
@@ -187,7 +189,8 @@ const executeTrasnsaction = async () => {
               }).compileToV0Message()
             );
 
-            const computeUnitsEstimate = await getComputeUnitsEstimate(executeBatchTransaction, connection);
+            const [computeUnitsEstimate, error] = await getComputeUnitsEstimate(executeBatchTransaction, connection);
+            if (error) throw new Error("Could not get compute unit estimate");
             const computeBudgetIx = [
               ComputeBudgetProgram.setComputeUnitLimit({
                 units: computeUnitsEstimate,

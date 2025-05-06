@@ -4,7 +4,7 @@ export const keys = {
   onchainMultisig: (multisigAddress: string) => `onchain:multisig:${multisigAddress}`,
   vaults: (multisigAddress: string) => `vaults:${multisigAddress}`,
   tokenBalances: (address: string) => `account:token-balance:${address}`,
-  transactions: ({ startIndex, endIndex, multisigAddress, programId }: {
-    startIndex: number; endIndex: number; multisigAddress: string; programId: string;
-  }) => `transactions:${startIndex}:${endIndex}:${multisigAddress}:${programId}`
+  transactions: ({ startIndex, endIndex, multisigAddress, programId, page }: {
+    startIndex: number; endIndex: number; multisigAddress: string; programId: string; page: number;
+  }) => `transactions:page:${page}:${startIndex}:${endIndex}:${multisigAddress}:${programId}`
 };

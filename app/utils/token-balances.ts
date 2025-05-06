@@ -293,6 +293,13 @@ async function getToken2022Metadata(connection: Connection, mint: string): Promi
   }
 }
 
+export const SOL_TOKEN_INFO = {
+  name: "Solana",
+  symbol: "SOL",
+  mint: "So11111111111111111111111111111111111111112",
+  image: "/sol.png"
+};
+
 // Main function to query token balances
 export async function getTokenBalances(address: string): Promise<TokenBalanceWithPrice[]> {
   const connection = connectionManager.getCurrentConnection();

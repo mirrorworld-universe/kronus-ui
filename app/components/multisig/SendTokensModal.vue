@@ -130,6 +130,9 @@ async function proposeSendTokenTransaction() {
 
     const isSOL = sendTokenPayload.value.token.value.symbol === "SOL";
 
+    let tokenMint: PublicKey;
+    let amountToSend: number;
+
     if (isSOL) {
       const lamportsToSend = sendTokenPayload.value.amount * LAMPORTS_PER_SOL;
       console.log("lamportsToSend", {
@@ -145,8 +148,8 @@ async function proposeSendTokenTransaction() {
       tx.add(transferSOLInstruction);
     } else {
       const tokenDecimals = sendTokenPayload.value.token.value.decimals;
-      const tokenMint = new PublicKey(sendTokenPayload.value.token.value.mint);
-      const amountToSend = sendTokenPayload.value.amount * 10 ** tokenDecimals;
+      tokenMint = new PublicKey(sendTokenPayload.value.token.value.mint);
+      amountToSend = sendTokenPayload.value.amount * 10 ** tokenDecimals;
       const tokenProgram = sendTokenPayload.value.token.value.tokenProgram === "Token-2022 Program" ? TOKEN_2022_PROGRAM_ID : TOKEN_PROGRAM_ID;
 
       // Get the associated token account address for the source (vault)
@@ -204,7 +207,9 @@ async function proposeSendTokenTransaction() {
       type: TransactionType.Send,
       assetType: isSOL ? TransferAssetType.SOL : TransferAssetType.SPL,
       transferType: isInternalTransfer ? TransferType.VaultToVault : TransferType.VaultToExternal,
-      description: sendTokenPayload.value.note
+      description: sendTokenPayload.value.note,
+      amount: sendTokenPayload.value.amount,
+      tokenMint: sendTokenPayload.value.token.value.mint
     };
 
     const result = await createSquadsVaultTransaction(

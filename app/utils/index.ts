@@ -55,8 +55,8 @@ export const usdAmountFormatter = Intl.NumberFormat("en-US", {
 
 export const tokenAmountFormatter = Intl.NumberFormat("en-US", {
   currencySign: "standard",
-  minimumFractionDigits: 2,
-  minimumSignificantDigits: 3
+  // minimumFractionDigits: 2,
+  // minimumSignificantDigits: 3
 });
 
 export function range(start: number, end: number): number[] {

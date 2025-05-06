@@ -52,6 +52,7 @@ export async function getComputeUnitsEstimate(
   });
 
   if (result.value.err) {
+    console.error(result.value.err);
     const logs = result.value.logs || [];
     const insufficientFunds = logs.find(log =>
       log.toLowerCase().includes("insufficient lamports")

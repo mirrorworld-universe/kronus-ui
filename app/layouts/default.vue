@@ -204,7 +204,7 @@ onMounted(async () => {
     </UDashboardGroup>
 
     <template #fallback>
-      <div class="h-full flex justify-center items-center">
+      <div class="h-screen flex flex-col justify-center items-center gap-5 w-full">
         <UIcon name="svg-spinners:bars-rotate-fade" />
       </div>
     </template>

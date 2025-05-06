@@ -1,18 +1,20 @@
 import type { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
+import type { z } from "zod";
 import { useGenesisVault } from "./useGenesisVault";
 import type { IMultisig } from "~/types/squads";
 import type { Database } from "~~/server/schema.gen";
+import type { createTransactionSchema } from "~~/server/validations/schemas";
 import { TransactionType } from "~~/server/validations/schemas";
 
-const TRANSACTIONS_PER_PAGE = 12;
+export const TRANSACTIONS_PER_PAGE = 24;
 
 export type TransactionQueryResult = {
   transactionPda: [PublicKey, number];
   proposalPda: [PublicKey, number];
-  proposal: multisig.generated.Proposal | null;
-  transaction: multisig.generated.VaultTransaction | null;
+  proposal: multisig.generated.Proposal;
+  transaction: multisig.generated.VaultTransaction;
   index: bigint;
 };
 
@@ -54,10 +56,13 @@ export async function useTransactions() {
     startIndex: startIndex.value,
     endIndex: endIndex.value,
     programId: SQUADS_V4_PROGRAM_ID.toBase58(),
-    multisigAddress: multisigAddress.value
+    multisigAddress: multisigAddress.value,
+    page: page.value
   }));
 
   const connection = connectionManager.getCurrentConnection();
+
+  type MetadataField = z.infer<typeof createTransactionSchema>["metadata"];
 
   const { data: latestTransactions } = await useAsyncData(TRANSACTIONS_PAGE_QUERY_KEY.value, async () => {
     if (!multisigAddress.value) return null;
@@ -69,6 +74,7 @@ export async function useTransactions() {
       for (let i = 0; i <= startIndex.value - endIndex.value; i++) {
         const index = BigInt(startIndex.value - i);
         const transaction = await fetchTransactionData(connection, multisigPda, index, SQUADS_V4_PROGRAM_ID);
+        // @ts-expect-error doesnt't check null
         results.push(transaction);
       }
 
@@ -81,7 +87,7 @@ export async function useTransactions() {
 
       return results.map(result => ({
         ...result,
-        ...(metadataCache[result.transactionPda[0].toBase58()] ? { metadata: metadataCache[result.transactionPda[0].toBase58()] } : { metadata: { type: TransactionType.Arbitrary } })
+        ...(metadataCache[result.transactionPda[0].toBase58()] ? { __metadata: metadataCache[result.transactionPda[0].toBase58()]!.metadata as MetadataField } : { __metadata: { type: TransactionType.Arbitrary } as MetadataField })
       }));
     } catch {
       return undefined;
@@ -91,29 +97,17 @@ export async function useTransactions() {
   const transactions = computed(() => (latestTransactions.value || []).map((transaction) => {
     return {
       ...transaction,
+      proposal: transaction.proposal,
       transactionPda: transaction.transactionPda[0].toBase58(),
       proposalPda: transaction.proposalPda[0].toBase58(),
       index: SerializableBigInt(transaction.index)
     };
   }));
 
-  // const parsedTransactions = computed(() => classifyAndExtractTransaction(transactions.value));
-
-  watchEffect(() => console.debug("useTransactions:multisig", transactions.value));
-  watchEffect(() => {
-    try {
-      const parsedTransactions = transactions.value.map(tx => ({
-        ...tx,
-        metadata: {
-          ...tx.metadata,
-          ...classifyAndExtractTransaction(tx)
-        }
-      }));
-      console.debug("parsedTransactions", parsedTransactions);
-    } catch (error: any) {
-      console.error("Error parsing transactions", error);
-    }
-  });
+  const parsedTransactions = computed(() => transactions.value.map(transaction => ({
+    ...transaction,
+    __parsed: classifyAndExtractTransaction(transaction)
+  })));
 
   function goToPage(page: number) {
     return {
@@ -127,7 +121,8 @@ export async function useTransactions() {
     page,
     goToPage,
     transactions,
-    // parsedTransactions,
+    totalTransactions,
+    parsedTransactions,
     totalPages,
     multisigAddress,
     TRANSACTIONS_PAGE_QUERY_KEY

@@ -113,6 +113,8 @@ export const createTransactionSchema = z.object({
     type: z.nativeEnum(TransactionType),
     description: z.string().optional(),
     transferType: z.nativeEnum(TransferType).optional(),
-    assetType: z.nativeEnum(TransferAssetType).optional()
+    assetType: z.nativeEnum(TransferAssetType).optional(),
+    amount: z.number(),
+    tokenMint: solanaPublicKey
   })
 });

@@ -68,8 +68,11 @@ const currentVault = computed(() => vaults.value.find(v => v.address === vaultAc
       </template>
     </UDashboardPanel>
     <template #fallback>
-      <div class="h-full flex justify-center items-center">
-        <UIcon name="svg-spinners:bars-rotate-fade" />
+      <div class="h-screen flex flex-col justify-center items-center gap-5">
+        <UIcon name="svg-spinners:bars-rotate-fade" class="size-5" />
+        <div class="text-xs">
+          Loading Treasury
+        </div>
       </div>
     </template>
   </Suspense>
