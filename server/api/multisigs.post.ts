@@ -52,9 +52,7 @@ export default defineEventHandler(async (event) => {
     });
 
     setResponseStatus(event, 201);
-    return {
-      data: result
-    };
+    return result;
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createError({

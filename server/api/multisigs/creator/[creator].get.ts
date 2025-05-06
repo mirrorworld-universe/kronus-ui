@@ -12,6 +12,10 @@ export default eventHandler(async (event) => {
     statusMessage: creatorPublicKey.error.errors.flat().join(),
   });
 
-  const { data } = await client.from("multisigs").select().eq("creator", creatorPublicKey.data);
+  const { data: _multisig_members } = await client.from("multisig_members").select().eq("public_key", creatorPublicKey.data);
+  console.log("_multisig_members", _multisig_members);
+  const { data } = await client.from("multisigs").select().in("public_key", (_multisig_members || [])?.map(member => member.multisig_id));
+  console.log("multisigs", data);
+
   return data;
 });

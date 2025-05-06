@@ -3,7 +3,7 @@ import { useWallet } from "solana-wallets-vue";
 import CreateMultisig from "~/components/home/CreateMultisig.vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useRefresh } from "~/composables/queries/useRefresh";
-import type { Multisig } from "~/types/squads";
+import type { IMultisig } from "~/types/squads";
 
 const wallet = useWallet();
 
@@ -15,7 +15,7 @@ const { walletAddress } = useWalletConnection();
 
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
 
-const { data: multisigs } = await useNuxtData<Multisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
+const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
 const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
 const router = useRouter();
@@ -26,6 +26,8 @@ watchOnce(multisigs, (newValue) => {
     if (defaultVault) {
       router.push(`/squads/${defaultVault}/home`);
     }
+  } else {
+    router.push(`/create`);
   }
 }, {
   immediate: true

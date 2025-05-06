@@ -1,6 +1,7 @@
 import type { Connection } from "@solana/web3.js";
 import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
+import { useGenesisVault } from "./useGenesisVault";
 import type { IMultisig } from "~/types/squads";
 import type { Database } from "~~/server/schema.gen";
 import { TransactionType } from "~~/server/validations/schemas";
@@ -24,9 +25,9 @@ function SerializableBigInt(val: bigint) {
 }
 
 export async function useTransactions() {
+  const { genesisVault } = await useGenesisVault();
   const route = useRoute();
 
-  const genesisVault = computed(() => route.params?.genesis_vault as unknown as string);
   const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
   const { data: __multisig } = useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
   const multisigAddress = computed(() => __multisig.value!.id);
@@ -60,6 +61,7 @@ export async function useTransactions() {
 
   const { data: latestTransactions } = await useAsyncData(TRANSACTIONS_PAGE_QUERY_KEY.value, async () => {
     if (!multisigAddress.value) return null;
+
     try {
       const multisigPda = new PublicKey(multisigAddress.value);
       const results: TransactionQueryResult[] = [];
@@ -95,7 +97,20 @@ export async function useTransactions() {
     };
   }));
 
+  // const parsedTransactions = computed(() => classifyAndExtractTransaction(transactions.value));
+
   watchEffect(() => console.debug("useTransactions:multisig", transactions.value));
+  // watchEffect(() => {
+  //   try {
+  //     // const parsedTransactions = transactions.value.map(tx => ({
+  //     //   ...tx,
+  //     //   metadata: classifyAndExtractTransaction(tx)
+  //     // }));
+  //     // console.debug("parsedTransactions", parsedTransactions);
+  //   } catch (error: any) {
+  //     // console.error("Error parsing transactions", error);
+  //   }
+  // });
 
   function goToPage(page: number) {
     return {
@@ -109,11 +124,14 @@ export async function useTransactions() {
     page,
     goToPage,
     transactions,
+    // parsedTransactions,
     totalPages,
     multisigAddress,
     TRANSACTIONS_PAGE_QUERY_KEY
   };
 }
+
+// export type TransactionsType = Awaited<ReturnType<Awaited<typeof useTransactions>>>["transactions"];
 
 /** Fetch transaction data */
 async function fetchTransactionData(

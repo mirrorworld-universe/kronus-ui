@@ -67,7 +67,7 @@ const sendingItems = computed(() => vaults.value.map((vault) => {
 
 const sendingValue = ref(sendingItems.value[0]);
 
-const sendingVaultTokensList = computed(() => (sendingValue.value!.tokens || []).map(token => ({
+const sendingVaultTokensList = computed(() => (sendingValue.value?.tokens || []).map(token => ({
   ...token,
   label: token.symbol,
   value: token.mint
@@ -227,8 +227,6 @@ async function proposeSendTokenTransaction() {
     title="Send"
     :ui="{ footer: 'justify-end' }"
   >
-    <UButton label="Open" color="neutral" variant="subtle" />
-
     <template #body>
       <div class="flex flex-col gap-3 w-full">
         <!-- Send Type -->

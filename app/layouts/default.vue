@@ -1,22 +1,27 @@
 <script setup lang="ts">
+import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import { useTransactions } from "~/composables/queries/useTransactions";
 
 const route = useRoute();
 const toast = useToast();
+const router = useRouter();
 
 const open = ref(false);
 
-const { walletAddress } = useWalletConnection();
-await useAsyncData(keys.multisigsByMember(walletAddress.value!), () => $fetch(`/api/multisigs/creator/${walletAddress.value}`));
-
-const genesisVault = computed(() => route.params?.genesis_vault as unknown as string);
+const { genesisVault } = await useGenesisVault();
 const { data: multisig } = await useAsyncData(keys.multisig(genesisVault.value), () => $fetch(`/api/multisigs/${genesisVault.value}`));
+
 const multisigAddress = computed(() => multisig.value!.id);
-const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddress.value), () => $fetch(`/api/vaults/${multisigAddress.value}`));
+const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddress.value), async () => {
+  if (!multisigAddress.value) return null;
+  else {
+    return $fetch(`/api/vaults/${multisigAddress.value}`);
+  }
+});
+
 await useMultisig(multisigAddress);
-const router = useRouter();
 
 const { TRANSACTIONS_PAGE_QUERY_KEY } = await useTransactions();
 
@@ -190,7 +195,8 @@ onMounted(async () => {
 
     <slot />
 
-    <NotificationsSlideover />
-    <MultisigSendTokensModal :multisig-address="multisigAddress" />
+    <template v-if="multisigAddress">
+      <MultisigSendTokensModal :multisig-address="multisigAddress" />
+    </template>
   </UDashboardGroup>
 </template>

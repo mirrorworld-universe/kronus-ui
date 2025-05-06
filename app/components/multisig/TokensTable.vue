@@ -92,6 +92,7 @@ function handleClickReceiveToken(token: TransformedToken) {
 
 const UAvatar = resolveComponent("UAvatar");
 const UProgress = resolveComponent("UProgress");
+const UIcon = resolveComponent("UIcon");
 
 const columns: TableColumn<TransformedToken>[] = [
   {
@@ -111,12 +112,14 @@ const columns: TableColumn<TransformedToken>[] = [
         }, [
           h("span", { class: "leading-none text-(--ui-text)" }, row.getValue("symbol")),
           h("span", { class: "leading-none flex justify-start items-center gap-1 text-xs" }, [
-            truncateMiddle(row.original.mint),
-            h(UButton, {
-              icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
-              onClick: () => copyToClipboard(row.original.mint),
-              class: "text-(--ui-muted) hover:text-(--ui-text)"
-            })
+            h("a", {
+              href: createSolanaExplorerUrl(row.original.mint),
+              target: "_blank",
+              class: "underline decoration-dashed transition-colors underline-offset-3 hover:text-primary flex items-center gap-1"
+            }, [
+              truncateMiddle(row.original.mint),
+              h(UIcon, { name: "material-symbols:arrow-outward-rounded" })
+            ]),
           ])
         ])
       ]);

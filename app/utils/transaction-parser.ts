@@ -1,89 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
 
-export interface KronusTransaction {
-  transactionPda: string;
-  transaction: Transaction;
-  proposalPda: string;
-  proposal: Proposal;
-  index: string;
-}
-
-export interface Transaction {
-  multisig: string;
-  creator: string;
-  index: string;
-  bump: number;
-  vaultIndex: number;
-  vaultBump: number;
-  ephemeralSignerBumps: EphemeralSignerBumps;
-  message: Message;
-}
-
-export type EphemeralSignerBumps = any;
-
-export interface Message {
-  numSigners: number;
-  numWritableSigners: number;
-  numWritableNonSigners: number;
-  accountKeys: string[];
-  instructions: Instruction[];
-  addressTableLookups: any[];
-}
-
-export interface Instruction {
-  programIdIndex: number;
-  accountIndexes: AccountIndexes;
-  data: Data;
-}
-
-export interface AccountIndexes {
-  0: number;
-  1?: number;
-  2?: number;
-  3?: number;
-  4?: number;
-  5?: number;
-  6?: number;
-  7?: number;
-  8?: number;
-  9?: number;
-  10?: number;
-}
-
-export interface Data {
-  0?: number;
-  1?: number;
-  2?: number;
-  3?: number;
-  4?: number;
-  5?: number;
-  6?: number;
-  7?: number;
-  8?: number;
-  9?: number;
-  10?: number;
-  11?: number;
-  12?: number;
-  13?: number;
-  14?: number;
-  15?: number;
-}
-
-export interface Proposal {
-  multisig: string;
-  transactionIndex: string;
-  status: Status;
-  bump: number;
-  approved: string[];
-  rejected: any[];
-  cancelled: any[];
-}
-
-export interface Status {
-  __kind: string;
-  timestamp: string;
-}
-
 type ParsedTransaction = {
   transactionPda: string;
   createdBy: string;
@@ -104,13 +20,14 @@ type ParsedTransaction = {
 };
 
 export function classifyAndExtractTransaction(
-  tx: KronusTransaction,
+  tx: any,
 ): ParsedTransaction {
-  const status = tx.proposal.status.__kind;
-  const approvals = tx.proposal.approved.length;
-  const rejections = tx.proposal.rejected.length;
+  const status = tx.proposal!.status.__kind;
+  const approvals = tx.proposal!.approved.length;
+  const rejections = tx.proposal!.rejected.length;
+  const _timestamp = tx.proposal!.status!.timestamp;
 
-  const timestamp = parseInt(tx.proposal.status.timestamp, 16) * 1000;
+  const timestamp = parseInt(_timestamp, 16) * 1000;
   const date = new Date(timestamp);
   const iso = date.toISOString();
 
@@ -124,8 +41,8 @@ export function classifyAndExtractTransaction(
 
   return {
     transactionPda: tx.transactionPda,
-    createdBy: tx.transaction.creator,
-    multisigAccount: tx.transaction.multisig,
+    createdBy: tx.transaction!.creator.toBase58(),
+    multisigAccount: tx.transaction!.multisig.toBase58(),
     createdAt,
     executedAt,
     createdAgo,
@@ -135,9 +52,9 @@ export function classifyAndExtractTransaction(
     approvals,
     rejections,
     votes: {
-      approved: tx.proposal.approved,
-      rejected: tx.proposal.rejected,
-      cancelled: tx.proposal.cancelled
+      approved: tx.proposal!.approved.map((key: any) => key.toBase58()),
+      rejected: tx.proposal!.rejected.map((key: any) => key.toBase58()),
+      cancelled: tx.proposal!.cancelled.map((key: any) => key.toBase58())
     }
   };
 }

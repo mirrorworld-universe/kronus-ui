@@ -88,6 +88,7 @@ const copyToClipboard = async (text: string) => {
 
 const UAvatar = resolveComponent("UAvatar");
 const UProgress = resolveComponent("UProgress");
+const UIcon = resolveComponent("UIcon");
 
 const columns = computed<TableColumn<TransformedVault>[]>(() => ([
   {
@@ -99,7 +100,14 @@ const columns = computed<TableColumn<TransformedVault>[]>(() => ([
       }, [
         h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}` }, () => row.original.name),
         h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
-          truncateMiddle(row.getValue("address")),
+          h("a", {
+            href: createSolanaExplorerUrl(row.getValue("address")),
+            target: "_blank",
+            class: "underline decoration-dashed transition-colors underline-offset-3 hover:text-primary flex items-center gap-1"
+          }, [
+            truncateMiddle(row.getValue("address")),
+            h(UIcon, { name: "material-symbols:arrow-outward-rounded" })
+          ]),
           h(UButton, {
             icon: "solar:copy-linear", size: "xs", color: "neutral", variant: "ghost",
             onClick: () => copyToClipboard(row.getValue("address")),

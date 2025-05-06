@@ -2,6 +2,7 @@ import { computed, ref } from "vue";
 import { useWallet } from "solana-wallets-vue";
 import type { WalletName } from "@solana/wallet-adapter-base";
 import type * as multisig from "@sqds/multisig";
+import { useGenesisVault } from "./queries/useGenesisVault";
 import { SUPPORTED_WALLETS } from "~/utils/constants";
 import type { IMultisig } from "~/types/squads";
 
@@ -86,9 +87,8 @@ export const useWalletConnection = () => {
 export async function useAuthorize() {
   const { walletAddress } = useWalletConnection();
 
-  const route = useRoute();
+  const { genesisVault } = await useGenesisVault();
 
-  const genesisVault = computed(() => route.params.genesis_vault as string);
   const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
   const { data: __multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 

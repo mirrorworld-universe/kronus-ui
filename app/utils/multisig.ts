@@ -75,7 +75,7 @@ export async function createMultisig(
 
         // Store multisig data in D1
         try {
-          await $fetch("/api/multisigs", {
+          const firstMultisig = await $fetch("/api/multisigs", {
             method: "POST",
             body: {
               address: multisigPda.toBase58(),
@@ -93,6 +93,12 @@ export async function createMultisig(
               vault_index: 0
             }
           });
+
+          return {
+            signature,
+            firstMultisig,
+            multisigAddress: multisigPda.toBase58(),
+          };
         } catch (error) {
           console.error("Failed to store multisig data:", error);
         }

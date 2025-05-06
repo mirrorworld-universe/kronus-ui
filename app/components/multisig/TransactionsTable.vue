@@ -17,6 +17,8 @@ const props = defineProps<{
   transactionsQueryKey: string;
 }>();
 
+const UButton = resolveComponent("UButton");
+
 const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(props.multisigPda));
 const { data: multisig } = useNuxtData<_multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);
 
@@ -119,7 +121,8 @@ const columns: TableColumn<TransformedTransaction>[] = [
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
           proposalStatus: row.original.status,
-          transactionsPageQuery: props.transactionsQueryKey
+          transactionsPageQuery: props.transactionsQueryKey,
+          class: "cursor-pointer"
         }),
         h(RejectButton, {
           color: "neutral",
@@ -128,7 +131,8 @@ const columns: TableColumn<TransformedTransaction>[] = [
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
           proposalStatus: row.original.status,
-          transactionsPageQuery: props.transactionsQueryKey
+          transactionsPageQuery: props.transactionsQueryKey,
+          class: "cursor-pointer"
         }),
         h(ExecuteButton, {
           color: row.original.status === "Approved" ? "success" : "neutral",
@@ -137,7 +141,8 @@ const columns: TableColumn<TransformedTransaction>[] = [
           multisigPda: props.multisigPda,
           transactionIndex: Number(row.original.index),
           proposalStatus: row.original.status,
-          transactionsPageQuery: props.transactionsQueryKey
+          transactionsPageQuery: props.transactionsQueryKey,
+          class: "cursor-pointer"
         }),
       ]);
     }
@@ -169,7 +174,7 @@ const columns: TableColumn<TransformedTransaction>[] = [
     </div> -->
 
     <div v-if="data.length === 0" class="text-center py-8 text-secondary-100">
-      No vaults found for this multisig
+      No transactions found for this multisig
     </div>
 
     <UTable

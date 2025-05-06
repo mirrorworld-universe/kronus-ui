@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import * as multisig from "@sqds/multisig";
 import { ref, computed } from "vue";
 import type { StepperItem } from "@nuxt/ui";
 import { useForm, useField } from "vee-validate";
@@ -126,7 +127,14 @@ const onSubmit = handleSubmit(async (formValues) => {
 
     emit("created");
     emitter.emit("multisigs:refresh");
-    router.push(`/squads/${multisigAddress}/home`);
+
+    const [firstVaultPublicKey] = multisig.getVaultPda({
+      index: 0,
+      multisigPda: new PublicKey(multisigAddress),
+      programId: SQUADS_V4_PROGRAM_ID,
+    });
+
+    router.push(`/squads/${firstVaultPublicKey.toBase58()}/home`);
 
     toast.add({
       title: "Success!",

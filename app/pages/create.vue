@@ -5,6 +5,10 @@ import WalletConnectButton from "~/components/WalletConnectButton.vue";
 defineRouteRules({
   ssr: false
 });
+
+definePageMeta({
+  layout: "create"
+});
 </script>
 
 <template>
