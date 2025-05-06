@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useWallet } from "solana-wallets-vue";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
-import VaultsList from "~/components/multisig/VaultsList.vue";
 
 const wallet = useWallet();
 
