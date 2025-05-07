@@ -14,7 +14,7 @@ const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
 
 const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
-const { data: currentMultisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
+const currentMultisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
 
 const CREATE_NEW_MULTISIG_ITEM = reactive({
   icon: "i-lucide-circle-plus",
