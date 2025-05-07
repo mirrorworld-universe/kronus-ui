@@ -38,7 +38,7 @@ const { page, goToPage: to, totalTransactions, parsedTransactions, multisigAddre
       </template>
     </UDashboardPanel>
     <template #fallback>
-      <div class="h-screen flex flex-col justify-center items-center gap-5">
+      <div class="h-screen flex flex-col justify-center items-center gap-5 w-full">
         <UIcon name="svg-spinners:bars-rotate-fade" class="size-5" />
         <div class="text-xs">
           Loading Transactions ...

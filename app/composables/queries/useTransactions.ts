@@ -10,12 +10,15 @@ import { TransactionType } from "~~/server/validations/schemas";
 
 export const TRANSACTIONS_PER_PAGE = 24;
 
+type MetadataField = z.infer<typeof createTransactionSchema>["metadata"];
+
 export type TransactionQueryResult = {
   transactionPda: [PublicKey, number];
   proposalPda: [PublicKey, number];
   proposal: multisig.generated.Proposal;
   transaction: multisig.generated.VaultTransaction;
   index: bigint;
+  __metadata: MetadataField;
 };
 
 function SerializableBigInt(val: bigint) {
@@ -31,7 +34,7 @@ export async function useTransactions() {
   const route = useRoute();
 
   const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-  const { data: __multisig } = useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
+  const __multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
   const multisigAddress = computed(() => __multisig.value?.id || "");
 
   const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(multisigAddress.value));
@@ -61,8 +64,6 @@ export async function useTransactions() {
   }));
 
   const connection = connectionManager.getCurrentConnection();
-
-  type MetadataField = z.infer<typeof createTransactionSchema>["metadata"];
 
   const { data: latestTransactions } = await useAsyncData(TRANSACTIONS_PAGE_QUERY_KEY.value, async () => {
     if (!multisigAddress.value) return null;
@@ -94,7 +95,9 @@ export async function useTransactions() {
     }
   });
 
-  const transactions = computed(() => (latestTransactions.value || []).map((transaction) => {
+  const cachedlatestTransactions = computed(() => useNuxtData<(TransactionQueryResult & { __metadata: MetadataField })[]>(TRANSACTIONS_PAGE_QUERY_KEY.value).data.value);
+
+  const transactions = computed(() => (cachedlatestTransactions.value || latestTransactions.value || []).map((transaction) => {
     return {
       ...transaction,
       proposal: transaction.proposal,
