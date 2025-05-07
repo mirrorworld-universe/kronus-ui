@@ -1,5 +1,5 @@
 import { ref, onUnmounted } from "vue";
-import type { Connection } from "@solana/web3.js";
+import type { Connection } from "@solana/web3.js/lib/index.esm";
 import { connectionManager } from "~/utils/connection.manager";
 
 export function useConnection() {

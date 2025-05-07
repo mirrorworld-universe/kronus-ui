@@ -1,9 +1,9 @@
 import type {
-  Connection } from "@solana/web3.js";
+  Connection } from "@solana/web3.js/lib/index.esm";
 import {
   PublicKey,
   LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+} from "@solana/web3.js/lib/index.esm";
 import fetch from "node-fetch";
 import {
   TOKEN_2022_PROGRAM_ID,

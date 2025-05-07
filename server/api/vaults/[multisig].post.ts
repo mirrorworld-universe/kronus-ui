@@ -1,6 +1,6 @@
 import { z } from "zod";
 import * as multisig from "@sqds/multisig";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js/lib/index.esm";
 import type { Database } from "../../schema.gen";
 import { serverSupabaseClient } from "#supabase/server";
 import { solanaPublicKey, createVaultSchema } from "~~/server/validations/schemas";

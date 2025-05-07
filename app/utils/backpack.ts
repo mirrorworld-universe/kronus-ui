@@ -17,8 +17,8 @@ import type {
   Transaction,
   TransactionVersion,
   VersionedTransaction,
-} from "@solana/web3.js";
-import { PublicKey } from "@solana/web3.js";
+} from "@solana/web3.js/lib/index.esm";
+import { PublicKey } from "@solana/web3.js/lib/index.esm";
 
 interface SolanaBackpack {
   publicKey: PublicKey;

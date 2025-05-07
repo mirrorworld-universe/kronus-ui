@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js/lib/index.esm";
 import type { StepperItem } from "@nuxt/ui";
 import * as multisig from "@sqds/multisig";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";

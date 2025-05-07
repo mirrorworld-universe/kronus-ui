@@ -3,7 +3,7 @@ import {
   Transaction,
   TransactionMessage,
   VersionedTransaction,
-} from "@solana/web3.js";
+} from "@solana/web3.js/lib/index.esm";
 import * as multisig from "@sqds/multisig";
 import type { z } from "zod";
 import { h } from "vue";

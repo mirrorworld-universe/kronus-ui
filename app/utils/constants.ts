@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js/lib/index.esm";
 
 export const SUPPORTED_WALLETS = [
   "Backpack",

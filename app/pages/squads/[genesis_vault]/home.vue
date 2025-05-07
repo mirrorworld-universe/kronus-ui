@@ -5,7 +5,7 @@ import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
-import type { IMultisig, IVault } from "~/types/squads";
+import type { IMultisig } from "~/types/squads";
 
 // const wallet = useWallet();
 

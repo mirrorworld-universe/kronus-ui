@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { PublicKey } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js/lib/index.esm";
 
 // Custom validator for Solana public keys
 export const solanaPublicKey = z.string().refine((val) => {

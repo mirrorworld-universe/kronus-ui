@@ -1,4 +1,4 @@
-import { Connection } from "@solana/web3.js";
+import { Connection } from "@solana/web3.js/lib/index.esm";
 import { RPC_CONNECTION_TRANSPORTS } from "./constants";
 
 class ConnectionManager {

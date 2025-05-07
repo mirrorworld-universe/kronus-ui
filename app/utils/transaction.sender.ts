@@ -4,7 +4,7 @@ import type {
   SignatureStatus,
 
   TransactionInstruction,
-} from "@solana/web3.js";
+} from "@solana/web3.js/lib/index.esm";
 import {
   Transaction,
   VersionedTransaction,
@@ -12,7 +12,7 @@ import {
   VersionedMessage,
   SendTransactionError,
   LAMPORTS_PER_SOL,
-} from "@solana/web3.js";
+} from "@solana/web3.js/lib/index.esm";
 import { backOff } from "exponential-backoff";
 import type { createWalletStore } from "solana-wallets-vue";
 

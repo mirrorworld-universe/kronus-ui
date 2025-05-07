@@ -22,12 +22,12 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
 
   alias: {
-    // "jayson/lib/client/browser": "jayson/lib/client/browser",
-    "rpc-websockets": "rpc-websockets",
+    "jayson/lib/client/browser": "jayson/lib/client/browser",
+    // "rpc-websockets": "rpc-websockets",
   },
 
   build: {
-    // transpile: ["@solana/web3.js", "jayson", "bn.js"]
+    transpile: ["rpc-websockets", "@solana/web3.js", "jayson", "bn.js"]
   },
 
   routeRules: {
@@ -51,6 +51,23 @@ export default defineNuxtConfig({
 
   compatibilityDate: "2024-07-11",
 
+  nitro: {
+    replace: {
+      "import 'jayson/lib/client/browser';": "import 'jayson/lib/client/browser/index.js';",
+    },
+    rollupConfig: {
+      external: [
+        "borsh",
+        "util",
+        "secp256k1",
+        "@solana/web3.js",
+        "@solana/wallet-adapter-phantom",
+        "@solana/wallet-adapter-base",
+        "jayson",
+      ],
+    },
+  },
+
   vite: {
     esbuild: {
       target: "esnext"
@@ -59,7 +76,8 @@ export default defineNuxtConfig({
       target: "esnext",
     },
     optimizeDeps: {
-      include: ["buffer", "rpc-websockets"],
+      include: ["buffer"],
+      exclude: ["rpc-websockets"],
       esbuildOptions: {
         target: "esnext"
       }
