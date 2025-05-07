@@ -4,6 +4,7 @@ export async function useGenesisVault() {
   const router = useRouter();
   const route = useRoute();
   const { walletAddress, connected } = useWalletConnection();
+
   const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
   const { data: multsigsByMember } = await useAsyncData(MULTISIG_BY_MEMBER_QUERY_KEY.value, () => {
     if (!walletAddress.value || !connected.value) return Promise.resolve([]);
@@ -12,7 +13,7 @@ export async function useGenesisVault() {
 
   if (multsigsByMember.value?.length && multsigsByMember.value?.length < 1) {
     console.debug("no vaults from this wallet address");
-    await router.push(`/create`);
+    return await router.push(`/create`);
   }
 
   const firstMultisig = computed(() => multsigsByMember.value![0]!);
