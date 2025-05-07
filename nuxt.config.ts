@@ -1,3 +1,5 @@
+import { nodePolyfills } from "vite-plugin-node-polyfills";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
@@ -17,10 +19,20 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  alias: {
+    "jayson/lib/client/browser": "jayson/lib/client/browser",
+    "rpc-websockets": "rpc-websockets",
+  },
+
   routeRules: {
     "/api/**": {
       cors: true
     }
+  },
+
+  sourcemap: {
+    server: true,
+    client: true,
   },
 
   future: {
@@ -41,11 +53,16 @@ export default defineNuxtConfig({
       target: "esnext"
     },
     optimizeDeps: {
-      include: ["@coral-xyz/anchor", "@solana/web3.js", "buffer"],
+      include: ["@coral-xyz/anchor", "@solana/web3.js", "buffer", "rpc-websockets"],
       esbuildOptions: {
         target: "esnext"
       }
     },
+    plugins: [
+      nodePolyfills({
+        include: ["stream", "crypto", "zlib", "vm", "events"],
+      }),
+    ],
     define: {
       "process.env.BROWSER": true
     }
