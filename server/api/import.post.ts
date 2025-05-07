@@ -4,11 +4,14 @@ import { PublicKey } from "@solana/web3.js";
 import { db } from "../db";
 import { multisigs, multisigMembers, vaults } from "../db/schema";
 import { importMultisigSchema } from "../validations/schemas";
-
 import { SQUADS_V4_PROGRAM_ID } from "../../app/utils/constants";
+// import type { Database } from "../schema.gen";
+// import { serverSupabaseClient } from "#supabase/server";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
+
+  // const client = await serverSupabaseClient<Database>(event);
 
   try {
     // Validate request body

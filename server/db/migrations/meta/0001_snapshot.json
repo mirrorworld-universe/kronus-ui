@@ -1,4 +1,6 @@
 {
+  "id": "5a23a5df-9381-45cc-80d3-a20f57ed21ad",
+  "prevId": "4f8b7c50-0713-4729-b797-c6dd88ae57e7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -57,15 +59,15 @@
       "uniqueConstraints": {
         "contacts_public_key_unique": {
           "name": "contacts_public_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "public_key"
-          ],
-          "nullsNotDistinct": false
+          ]
         }
       },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.multisig_members": {
       "name": "multisig_members",
@@ -89,15 +91,15 @@
         "multisig_members_multisig_id_multisigs_id_fk": {
           "name": "multisig_members_multisig_id_multisigs_id_fk",
           "tableFrom": "multisig_members",
+          "tableTo": "multisigs",
           "columnsFrom": [
             "multisig_id"
           ],
-          "tableTo": "multisigs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -111,8 +113,8 @@
       },
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.multisigs": {
       "name": "multisigs",
@@ -130,11 +132,29 @@
           "primaryKey": false,
           "notNull": true
         },
+        "create_key": {
+          "name": "create_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_vault": {
+          "name": "first_vault",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "name": {
           "name": "name",
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "threshold": {
           "name": "threshold",
@@ -169,15 +189,29 @@
       "uniqueConstraints": {
         "multisigs_public_key_unique": {
           "name": "multisigs_public_key_unique",
+          "nullsNotDistinct": false,
           "columns": [
             "public_key"
-          ],
-          "nullsNotDistinct": false
+          ]
+        },
+        "multisigs_create_key_unique": {
+          "name": "multisigs_create_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "create_key"
+          ]
+        },
+        "multisigs_first_vault_unique": {
+          "name": "multisigs_first_vault_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "first_vault"
+          ]
         }
       },
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.transaction_signatures": {
       "name": "transaction_signatures",
@@ -195,11 +229,11 @@
           "primaryKey": false,
           "notNull": true
         },
-        "contact_id": {
-          "name": "contact_id",
-          "type": "text",
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
           "primaryKey": false,
-          "notNull": false
+          "notNull": true
         },
         "timestamp": {
           "name": "timestamp",
@@ -214,28 +248,15 @@
         "transaction_signatures_transaction_id_transactions_id_fk": {
           "name": "transaction_signatures_transaction_id_transactions_id_fk",
           "tableFrom": "transaction_signatures",
+          "tableTo": "transactions",
           "columnsFrom": [
             "transaction_id"
           ],
-          "tableTo": "transactions",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
-        },
-        "transaction_signatures_contact_id_contacts_id_fk": {
-          "name": "transaction_signatures_contact_id_contacts_id_fk",
-          "tableFrom": "transaction_signatures",
-          "columnsFrom": [
-            "contact_id"
-          ],
-          "tableTo": "contacts",
-          "columnsTo": [
-            "id"
-          ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -249,8 +270,8 @@
       },
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.transactions": {
       "name": "transactions",
@@ -260,6 +281,12 @@
           "name": "id",
           "type": "text",
           "primaryKey": true,
+          "notNull": true
+        },
+        "transaction_pda": {
+          "name": "transaction_pda",
+          "type": "text",
+          "primaryKey": false,
           "notNull": true
         },
         "multisig_id": {
@@ -274,9 +301,15 @@
           "primaryKey": false,
           "notNull": true
         },
-        "status": {
-          "name": "status",
+        "vault_account": {
+          "name": "vault_account",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
           "primaryKey": false,
           "notNull": true
         },
@@ -300,22 +333,22 @@
         "transactions_multisig_id_multisigs_id_fk": {
           "name": "transactions_multisig_id_multisigs_id_fk",
           "tableFrom": "transactions",
+          "tableTo": "multisigs",
           "columnsFrom": [
             "multisig_id"
           ],
-          "tableTo": "multisigs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     },
     "public.vaults": {
       "name": "vaults",
@@ -333,6 +366,18 @@
           "primaryKey": false,
           "notNull": true
         },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -346,15 +391,15 @@
         "vaults_multisig_id_multisigs_id_fk": {
           "name": "vaults_multisig_id_multisigs_id_fk",
           "tableFrom": "vaults",
+          "tableTo": "multisigs",
           "columnsFrom": [
             "multisig_id"
           ],
-          "tableTo": "multisigs",
           "columnsTo": [
             "id"
           ],
-          "onUpdate": "no action",
-          "onDelete": "no action"
+          "onDelete": "no action",
+          "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {
@@ -368,21 +413,19 @@
       },
       "uniqueConstraints": {},
       "policies": {},
-      "isRLSEnabled": false,
-      "checkConstraints": {}
+      "checkConstraints": {},
+      "isRLSEnabled": false
     }
   },
   "enums": {},
   "schemas": {},
-  "_meta": {
-    "schemas": {},
-    "tables": {},
-    "columns": {}
-  },
-  "id": "4f8b7c50-0713-4729-b797-c6dd88ae57e7",
-  "prevId": "00000000-0000-0000-0000-000000000000",
   "sequences": {},
+  "roles": {},
   "policies": {},
   "views": {},
-  "roles": {}
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
 }
