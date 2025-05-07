@@ -13,13 +13,13 @@ export async function useGenesisVault() {
 
   if (multsigsByMember.value?.length && multsigsByMember.value?.length < 1) {
     console.debug("no vaults from this wallet address");
-    return await router.push(`/create`);
+    await router.push(`/create`);
   }
 
-  const firstMultisig = computed(() => multsigsByMember.value![0]!);
-  const genesisVault = computed(() => route.params?.genesis_vault as unknown as string || firstMultisig.value!.first_vault);
+  const firstMultisig = computed(() => multsigsByMember.value?.[0]);
+  const genesisVault = computed(() => route.params?.genesis_vault as unknown as string || firstMultisig.value?.first_vault || "");
 
-  const currentMultisigAddress = computed(() => multsigsByMember.value!.find(ms => ms.first_vault === genesisVault.value)!.public_key);
+  const currentMultisigAddress = computed(() => multsigsByMember.value!.find(ms => ms.first_vault === genesisVault.value)?.public_key || "");
 
   watchEffect(() => console.log("currentMultisigAddress", currentMultisigAddress.value));
 

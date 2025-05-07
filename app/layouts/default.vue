@@ -30,7 +30,7 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
 });
 
 const multisigAddress = computed(() => multisig.value?.id || "");
-const { data: _ } = await useMultisig(multisigAddress);
+const _ = await useMultisig(multisigAddress);
 
 const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
 

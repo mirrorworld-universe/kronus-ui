@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NuxtError } from "#app";
 
-defineProps<{
+const props = defineProps<{
   error: NuxtError;
 }>();
 
@@ -15,6 +15,8 @@ useHead({
     lang: "en"
   }
 });
+
+watchEffect(() => console.error(props.error));
 </script>
 
 <template>

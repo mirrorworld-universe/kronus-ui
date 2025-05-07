@@ -2,6 +2,7 @@
 // import { useWallet } from "solana-wallets-vue";
 
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
+import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import type { IMultisig, IVault } from "~/types/squads";
@@ -14,6 +15,7 @@ defineRouteRules({
 
 const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
+const { treasuryAccounts } = await useGenesisVault();
 
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
@@ -26,9 +28,10 @@ watchOnce(multisig, async (multisigData) => {
 });
 
 const multisigAddress = computed(() => multisig.value?.id || "");
-const { data } = await useMultisig(multisigAddress);
 
-const prettifiedData = computed(() => data.value);
+const onchainMultisig = await useMultisig(multisigAddress, qk => console.log("home:useMultisig:queryKey", qk));
+
+const prettifiedData = computed(() => onchainMultisig.value);
 const computedMultisigData = computed(() => ({
   address: genesisVault.value,
   members: (prettifiedData.value?.members || []),
@@ -39,20 +42,16 @@ const threshold = computed(() => {
   return `${computedMultisigData.value.threshold} / ${computedMultisigData.value.members.length}`;
 });
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
-const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
+// const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const vaults = computed(() => treasuryAccounts.value);
 
-watchEffect(() => {
-  (vaults.value || []).forEach((vault) => {
-    useAsyncData(keys.tokenBalances(vault.public_key), () => $fetch(`/api/balances/${vault.public_key}`));
-  });
+const totalMultisigsValue = computed(() => {
+  return (vaults.value || []).map((vault) => {
+    const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.public_key))?.data.value || [];
+    const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
+    return vaultTokensValue;
+  }).reduce((acc, curr) => acc + curr, 0);
 });
-
-const totalMultisigsValue = computed(() => (vaults.value || []).map((vault) => {
-  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.public_key))?.data.value || [];
-  const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
-  return vaultTokensValue;
-}).reduce((acc, curr) => acc + curr, 0));
 
 const stats = computed(() => ([
   { name: "Total Balance", value: usdAmountFormatter.format(totalMultisigsValue.value) },

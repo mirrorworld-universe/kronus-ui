@@ -22,8 +22,12 @@ export default defineNuxtConfig({
   css: ["~/assets/css/main.css"],
 
   alias: {
-    "jayson/lib/client/browser": "jayson/lib/client/browser",
+    // "jayson/lib/client/browser": "jayson/lib/client/browser",
     "rpc-websockets": "rpc-websockets",
+  },
+
+  build: {
+    // transpile: ["@solana/web3.js", "jayson", "bn.js"]
   },
 
   routeRules: {
@@ -52,10 +56,10 @@ export default defineNuxtConfig({
       target: "esnext"
     },
     build: {
-      target: "esnext"
+      target: "esnext",
     },
     optimizeDeps: {
-      include: ["@coral-xyz/anchor", "@solana/web3.js", "buffer", "rpc-websockets"],
+      include: ["buffer", "rpc-websockets"],
       esbuildOptions: {
         target: "esnext"
       }
