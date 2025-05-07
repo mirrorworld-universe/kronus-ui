@@ -1,4 +1,4 @@
-import { PublicKey } from "@solana/web3.js/lib/index.esm";
+import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 
 const { Multisig } = multisig.accounts;

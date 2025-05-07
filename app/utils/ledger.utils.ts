@@ -1,10 +1,10 @@
 // ledger-transaction-utils.ts
 import { createHash } from "crypto";
 import type {
-  Transaction } from "@solana/web3.js/lib/index.esm";
+  Transaction } from "@solana/web3.js";
 import {
   VersionedTransaction,
-} from "@solana/web3.js/lib/index.esm";
+} from "@solana/web3.js";
 
 /**
  * Utility functions for handling Ledger transaction message hashes during blind signing

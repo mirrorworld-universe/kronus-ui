@@ -1,6 +1,6 @@
 import { z } from "zod";
 import * as multisig from "@sqds/multisig";
-import { PublicKey } from "@solana/web3.js/lib/index.esm";
+import { PublicKey } from "@solana/web3.js";
 import { db } from "../db";
 import { multisigs, multisigMembers, vaults } from "../db/schema";
 import { importMultisigSchema } from "../validations/schemas";

@@ -1,5 +1,5 @@
-import type { PublicKey } from "@solana/web3.js/lib/index.esm";
-import { Keypair, Transaction } from "@solana/web3.js/lib/index.esm";
+import type { PublicKey } from "@solana/web3.js";
+import { Keypair, Transaction } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 import { $fetch } from "ofetch";
 

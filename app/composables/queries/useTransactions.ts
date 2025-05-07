@@ -1,5 +1,5 @@
-import type { Connection } from "@solana/web3.js/lib/index.esm";
-import { PublicKey } from "@solana/web3.js/lib/index.esm";
+import type { Connection } from "@solana/web3.js";
+import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 import type { z } from "zod";
 import { useGenesisVault } from "./useGenesisVault";
