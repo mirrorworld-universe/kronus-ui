@@ -123,10 +123,9 @@ const groups = computed(() => [{
   label: "Code",
   items: [{
     id: "source",
-    label: "View page source",
+    label: "View Source",
     icon: "i-simple-icons-github",
-    to: `https://github.com/nuxt-ui-pro/dashboard/blob/main/app/pages${route.path === "/" ? "/index" : route.path}.vue`,
-    target: "_blank"
+    to: `https://github.com/mirrorworld-universe/kronus-ui`,
   }]
 }]);
 
