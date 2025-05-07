@@ -1,4 +1,5 @@
 import { useMultisig } from "./useMultisigs";
+import type { IMultisig, IVault } from "~/types/squads";
 
 export async function useGenesisVault() {
   const router = useRouter();
@@ -8,7 +9,13 @@ export async function useGenesisVault() {
   const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
   const { data: multsigsByMember } = await useAsyncData(MULTISIG_BY_MEMBER_QUERY_KEY.value, () => {
     if (!walletAddress.value || !connected.value) return Promise.resolve([]);
-    return $fetch(`/api/multisigs/member/${walletAddress.value}`);
+
+    const cachedValue = useNuxtData<IMultisig[]>(MULTISIG_BY_MEMBER_QUERY_KEY.value).data.value;
+    if (cachedValue) {
+      return Promise.resolve(cachedValue);
+    } else {
+      return $fetch(`/api/multisigs/member/${walletAddress.value}`);
+    }
   });
 
   if (multsigsByMember.value?.length && multsigsByMember.value?.length < 1) {
@@ -29,7 +36,11 @@ export async function useGenesisVault() {
 
   const { data: treasuryAccounts } = await useAsyncData(CURRENT_MULTISIG_QUERY_KEY.value, async () => {
     if (!currentMultisigAddress.value) return null;
-    else {
+
+    const cachedValue = useNuxtData<IVault[]>(CURRENT_MULTISIG_QUERY_KEY.value).data.value;
+    if (cachedValue) {
+      return Promise.resolve(cachedValue);
+    } else {
       return $fetch(`/api/vaults/${currentMultisigAddress.value}`);
     }
   });

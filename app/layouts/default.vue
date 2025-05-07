@@ -97,7 +97,9 @@ const links = computed(() => [[{
   })) || [],
 },
 
-], [{
+], [
+/**
+ * {
   label: "Feedback",
   icon: "i-lucide-message-circle",
   to: "https://github.com/nuxt-ui-pro/dashboard",
@@ -107,7 +109,10 @@ const links = computed(() => [[{
   icon: "i-lucide-info",
   to: "https://github.com/nuxt/ui-pro",
   target: "_blank"
-}]]);
+}
+ */
+
+]]);
 
 const groups = computed(() => [{
   id: "links",
