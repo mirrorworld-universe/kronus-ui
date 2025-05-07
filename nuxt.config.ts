@@ -2,6 +2,7 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
+
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui-pro",
@@ -12,6 +13,7 @@ export default defineNuxtConfig({
     "@nuxt/scripts",
     "@nuxtjs/supabase",
   ],
+  ssr: false,
 
   devtools: {
     enabled: true
