@@ -32,7 +32,7 @@ export async function useTransactions() {
 
   const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
   const { data: __multisig } = useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
-  const multisigAddress = computed(() => __multisig.value!.id);
+  const multisigAddress = computed(() => __multisig.value?.id || "");
 
   const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(multisigAddress.value));
   const { data: multisig } = useNuxtData<multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);

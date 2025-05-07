@@ -3,6 +3,7 @@
 
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useMultisig } from "~/composables/queries/useMultisigs";
+import { useRefresh } from "~/composables/queries/useRefresh";
 import type { IMultisig, IVault } from "~/types/squads";
 
 // const wallet = useWallet();
@@ -16,9 +17,15 @@ const genesisVault = computed(() => route.params.genesis_vault as string);
 
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
+const { refresh } = await useRefresh(MULTISIG_QUERY_KEY);
 
-const multisigAddress = computed(() => multisig.value!.id);
+watchOnce(multisig, async (multisigData) => {
+  if (!multisigData) await refresh();
+}, {
+  immediate: true
+});
 
+const multisigAddress = computed(() => multisig.value?.id || "");
 const { data } = await useMultisig(multisigAddress);
 
 const prettifiedData = computed(() => data.value);
@@ -84,9 +91,11 @@ const stats = computed(() => ([
                   <p class="text-sm/6 font-medium text-gray-400">
                     {{ stat.name }}
                   </p>
-                  <p class="mt-2 flex items-baseline gap-x-2">
-                    <span class="text-4xl font-semibold tracking-tight text-white">{{ stat.value }}</span>
-                  </p>
+                  <UTooltip :disabled="stat.name !== 'Total Balance'" :text="String(stat.value)" :delay-duration="200">
+                    <p class="mt-2 flex items-baseline gap-x-2 truncate text-ellipsis w-full cursor-pointer">
+                      <span class="text-4xl font-semibold tracking-tight text-white truncate text-ellipsis w-full">{{ stat.value }}</span>
+                    </p>
+                  </UTooltip>
                 </div>
               </div>
             </div>

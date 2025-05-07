@@ -3,31 +3,50 @@ import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import { useTransactions } from "~/composables/queries/useTransactions";
+import type { IMultisig } from "~/types/squads";
 
 const route = useRoute();
 const toast = useToast();
 const router = useRouter();
 
+const { walletAddress, connected } = useWalletConnection();
+const isWalletConnected = computed(() => !!walletAddress.value && connected.value);
 const open = ref(false);
 
-const { genesisVault } = await useGenesisVault();
-const { data: multisig } = await useAsyncData(keys.multisig(genesisVault.value), () => $fetch(`/api/multisigs/${genesisVault.value}`));
+const { genesisVault, treasuryAccounts: treasuryAccountsFallback } = await useGenesisVault();
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 
-const multisigAddress = computed(() => multisig.value!.id);
-const { data: treasuryAccounts } = await useAsyncData(keys.vaults(multisigAddress.value), async () => {
-  if (!multisigAddress.value) return null;
-  else {
-    return $fetch(`/api/vaults/${multisigAddress.value}`);
+await useAsyncData(MULTISIG_QUERY_KEY.value, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+
+const multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
+
+const { refresh: refreshMultisig } = useRefresh(MULTISIG_QUERY_KEY);
+
+watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQueryKey) => {
+  if (newMultisigQueryKey !== oldMultisigQueryKey) {
+    console.debug("genesis vault changed. invalidating multisig query data...");
+    await refreshMultisig();
   }
 });
 
-await useMultisig(multisigAddress);
+const multisigAddress = computed(() => multisig.value?.id || "");
+const { data: _ } = await useMultisig(multisigAddress);
+
+const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+
+const treasuryAccounts = computed(() => (useNuxtData<{
+  created_at: string | null;
+  multisig_id: string;
+  name: string;
+  public_key: string;
+  vault_index: number;
+}[]>(CURRENT_MULTISIG_QUERY_KEY.value).data.value!) || treasuryAccountsFallback.value);
 
 const { TRANSACTIONS_PAGE_QUERY_KEY, transactions } = await useTransactions();
 
 const pendingTransactionsCount = computed(() => transactions.value.filter(tx => tx.proposal?.status.__kind === "Active").length);
-
 const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
+
 const isTreasuryCollapsed = ref(true);
 const links = computed(() => [[{
   label: "Dashboard",
@@ -77,27 +96,6 @@ const links = computed(() => [[{
     }
   })) || [],
 },
-  // {
-  //   label: "Members",
-  //   to: "/settings/members",
-  //   icon: "i-lucide-users",
-  //   onSelect: () => {
-  //     open.value = false;
-  //   }
-  // }, {
-  //   label: "Settings",
-  //   to: "/settings",
-  //   icon: "i-lucide-settings",
-  //   defaultOpen: true,
-  //   children: [{
-  //     label: "General",
-  //     to: "/settings",
-  //     exact: true,
-  //     onSelect: () => {
-  //       open.value = false;
-  //     }
-  //   }]
-  // }
 
 ], [{
   label: "Feedback",
@@ -160,46 +158,51 @@ onMounted(async () => {
 <template>
   <Suspense>
     <UDashboardGroup unit="rem">
-      <UDashboardSidebar
-        id="default"
-        v-model:open="open"
-        collapsible
-        resizable
-        class="bg-(--ui-bg-elevated)/25"
-        :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
-      >
-        <template #header="{ collapsed }">
-          <MultisigsMenu :collapsed="collapsed" />
+      <template v-if="isWalletConnected">
+        <UDashboardSidebar
+          id="default"
+          v-model:open="open"
+          collapsible
+          resizable
+          class="bg-(--ui-bg-elevated)/25"
+          :ui="{ footer: 'lg:border-t lg:border-(--ui-border)' }"
+        >
+          <template #header="{ collapsed }">
+            <MultisigsMenu :collapsed="collapsed" />
+          </template>
+
+          <template #default="{ collapsed }">
+            <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
+
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[0] as any"
+              orientation="vertical"
+            />
+
+            <UNavigationMenu
+              :collapsed="collapsed"
+              :items="links[1] as any"
+              orientation="vertical"
+              class="mt-auto"
+            />
+          </template>
+
+          <template #footer="{ collapsed }">
+            <UserMenu :collapsed="collapsed" />
+          </template>
+        </UDashboardSidebar>
+
+        <UDashboardSearch :groups="groups" />
+
+        <slot />
+
+        <template v-if="multisigAddress">
+          <MultisigSendTokensModal :multisig-address="multisigAddress" />
         </template>
-
-        <template #default="{ collapsed }">
-          <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
-
-          <UNavigationMenu
-            :collapsed="collapsed"
-            :items="links[0] as any"
-            orientation="vertical"
-          />
-
-          <UNavigationMenu
-            :collapsed="collapsed"
-            :items="links[1] as any"
-            orientation="vertical"
-            class="mt-auto"
-          />
-        </template>
-
-        <template #footer="{ collapsed }">
-          <UserMenu :collapsed="collapsed" />
-        </template>
-      </UDashboardSidebar>
-
-      <UDashboardSearch :groups="groups" />
-
-      <slot />
-
-      <template v-if="multisigAddress">
-        <MultisigSendTokensModal :multisig-address="multisigAddress" />
+      </template>
+      <template v-else>
+        <HomeConnectWallet />
       </template>
     </UDashboardGroup>
 

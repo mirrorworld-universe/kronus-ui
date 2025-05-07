@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { useWalletConnection } from "~/composables/useWalletConnection";
 
-const { isModalOpen, closeModal, availableWallets, connectWallet } = useWalletConnection();
+const { isModalOpen, closeModal, openModal, availableWallets, connectWallet } = useWalletConnection();
+
+emitter.on("connect-wallet:open", openModal);
 </script>
 
 <template>
