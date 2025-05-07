@@ -87,12 +87,12 @@ const stats = computed(() => ([
             <div class="mx-auto max-w-7xl">
               <div class="grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-3 divide-x divide-(--ui-border)">
                 <div v-for="stat in stats" :key="stat.name" class="px-4 py-6 sm:px-6 lg:px-8">
-                  <p class="text-sm/6 font-medium text-gray-400">
+                  <p class="text-sm/6 font-medium text-(--ui-text-muted)">
                     {{ stat.name }}
                   </p>
                   <UTooltip :disabled="stat.name !== 'Total Balance'" :text="String(stat.value)" :delay-duration="200">
                     <p class="mt-2 flex items-baseline gap-x-2 truncate text-ellipsis w-full cursor-pointer">
-                      <span class="text-4xl font-semibold tracking-tight text-white truncate text-ellipsis w-full">{{ stat.value }}</span>
+                      <span class="text-4xl font-semibold tracking-tight text-(--ui-text-highlighted) truncate text-ellipsis w-full">{{ stat.value }}</span>
                     </p>
                   </UTooltip>
                 </div>
