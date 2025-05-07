@@ -225,6 +225,7 @@ async function importMultisig() {
             <div class="flex flex-col gap-4 items-start justify-start min-w-sm w-full">
               <UStepper
                 ref="stepper"
+                :default-value="-1"
                 linear
                 size="sm"
                 orientation="vertical"

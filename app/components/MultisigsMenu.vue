@@ -22,6 +22,12 @@ const CREATE_NEW_MULTISIG_ITEM = reactive({
   name: "Create squad",
   to: "/create",
 });
+const IMPORT_MULTISIG_ITEM = reactive({
+  icon: "line-md:downloading-loop",
+  label: "Import multisig",
+  name: "Import multisig",
+  to: "/import",
+});
 
 const multisigsList = computed(() => (multisigs.value || []));
 const selectedMultisig = computed(() => currentMultisig.value);
@@ -33,26 +39,40 @@ const items = computed(() => {
     async onSelect() {
       await router.push(`/squads/${multisig.first_vault}/home`);
     }
-  })), [CREATE_NEW_MULTISIG_ITEM]];
+  })), [CREATE_NEW_MULTISIG_ITEM, IMPORT_MULTISIG_ITEM]];
 });
 </script>
 
 <template>
   <div class="w-full">
-    <UButton
-      v-if="!multisigsList.length"
-      v-bind="{
-        ...CREATE_NEW_MULTISIG_ITEM
-      }"
-      color="neutral"
-      variant="outline"
-      block
-      :square="collapsed"
-      class="data-[state=open]:bg-(--ui-bg-elevated) justify-start px-3"
-      :class="[!collapsed && 'py-2']"
-    >
-      Create Squad
-    </UButton>
+    <template v-if="!multisigsList.length">
+      <UButton
+        v-bind="{
+          ...CREATE_NEW_MULTISIG_ITEM
+        }"
+        color="neutral"
+        variant="outline"
+        block
+        :square="collapsed"
+        class="data-[state=open]:bg-(--ui-bg-elevated) justify-start px-3"
+        :class="[!collapsed && 'py-2']"
+      >
+        Create Squad
+      </UButton>
+      <UButton
+        v-bind="{
+          ...IMPORT_MULTISIG_ITEM
+        }"
+        color="neutral"
+        variant="outline"
+        block
+        :square="collapsed"
+        class="data-[state=open]:bg-(--ui-bg-elevated) justify-start px-3"
+        :class="[!collapsed && 'py-2']"
+      >
+        Import Squad
+      </UButton>
+    </template>
     <UDropdownMenu
       v-else
       :items="items"

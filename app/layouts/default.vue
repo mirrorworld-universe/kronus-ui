@@ -16,8 +16,6 @@ const open = ref(false);
 const { genesisVault, treasuryAccounts: treasuryAccountsFallback } = await useGenesisVault();
 const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
 
-await useAsyncData(MULTISIG_QUERY_KEY.value, () => $fetch(`/api/multisigs/${genesisVault.value}`));
-
 const multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
 
 const { refresh: refreshMultisig } = useRefresh(MULTISIG_QUERY_KEY);
@@ -25,7 +23,9 @@ const { refresh: refreshMultisig } = useRefresh(MULTISIG_QUERY_KEY);
 watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQueryKey) => {
   if (newMultisigQueryKey !== oldMultisigQueryKey) {
     console.debug("genesis vault changed. invalidating multisig query data...");
-    await refreshMultisig();
+    await refreshMultisig(async () => {
+      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+    });
   }
 });
 
