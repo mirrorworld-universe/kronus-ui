@@ -3,6 +3,7 @@ import { PublicKey } from "@solana/web3.js";
 import * as multisig from "@sqds/multisig";
 import type { z } from "zod";
 import { useGenesisVault } from "./useGenesisVault";
+import { useRefresh } from "./useRefresh";
 import type { IMultisig } from "~/types/squads";
 import type { Database } from "~~/server/schema.gen";
 import type { createTransactionSchema } from "~~/server/validations/schemas";
@@ -39,6 +40,13 @@ export async function useTransactions() {
 
   const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(multisigAddress.value));
   const { data: multisig } = useNuxtData<multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);
+  const { refresh } = await useRefresh(ONCHAIN_MULTISIG_QUERY_KEY);
+
+  watchOnce(multisig, async (multisigData) => {
+    if (!multisigData) await refresh();
+  }, {
+    immediate: true
+  });
 
   const pageParam = computed(() => route.query.page as string);
   const page = computed(() => {

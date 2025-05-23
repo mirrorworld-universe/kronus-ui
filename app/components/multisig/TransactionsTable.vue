@@ -86,16 +86,15 @@ const statusToColor = (status: string) => {
       return "neutral";
   }
 };
+
 function getVaultTransactionToken(transaction: TransformedTransaction, assetTransferType: TransferAssetType) {
   const isSOL = assetTransferType === TransferAssetType.SOL;
 
-  const splTokenAccountIndex = 5;
-  const splTokenMintAccount = transaction.transaction!.message.accountKeys[splTokenAccountIndex]?.toBase58();
-
   const vaultAccount = transaction.transaction!.message.accountKeys[1]!;
+
   const { data: vaultBalanceQuery } = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vaultAccount?.toBase58()));
   if (vaultBalanceQuery.value) {
-    return isSOL ? vaultBalanceQuery.value.find(token => token.symbol === "SOL") : vaultBalanceQuery.value.find(token => token.mint === splTokenMintAccount);
+    return isSOL ? vaultBalanceQuery.value.find(token => token.symbol === "SOL") : vaultBalanceQuery.value.find(token => token.mint === transaction.__metadata.tokenMint);
   }
 }
 
@@ -133,7 +132,7 @@ const columns: TableColumn<TransformedTransaction>[] = [
       const isSOL = row.original.__metadata.assetType === TransferAssetType.SOL;
 
       return h("div", {
-        class: "flex justify-start items-center gap-4"
+        class: "flex justify-start items-center gap-2"
       }, isSendTransaction
         ? [
             h(UAvatar, {
@@ -145,7 +144,7 @@ const columns: TableColumn<TransformedTransaction>[] = [
             h("span", [
               isSOL
                 ? tokenAmountFormatter.format(parseSOLTransferInstruction(JSON.parse(JSON.stringify(row.original.transaction!.message)) as any as SolanaTransactionMessage).amountInSOL)
-                : tokenAmountFormatter.format(parseSPLTokenTransferInstruction(JSON.parse(JSON.stringify(row.original.transaction!.message)) as any as SolanaTransactionMessage).amount / 10 ** (getVaultTransactionToken(row.original, row.original.__metadata.assetType!)?.decimals || 1))
+                : tokenAmountFormatter.format(row.original.__metadata.amount)
             ])
           ]
         : []);

@@ -28,7 +28,6 @@ watchOnce(multisig, async (multisigData) => {
 });
 
 const multisigAddress = computed(() => multisig.value?.id || "");
-
 const onchainMultisig = await useMultisig(multisigAddress, qk => console.log("home:useMultisig:queryKey", qk));
 
 const prettifiedData = computed(() => onchainMultisig.value);

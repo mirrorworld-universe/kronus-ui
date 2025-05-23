@@ -2,7 +2,6 @@ import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-
   modules: [
     "@nuxt/eslint",
     "@nuxt/ui-pro",
@@ -16,24 +15,25 @@ export default defineNuxtConfig({
   ssr: false,
 
   devtools: {
-    enabled: true
+    enabled: true,
   },
 
   css: ["~/assets/css/main.css"],
 
   alias: {
     "jayson/lib/client/browser": "jayson/lib/client/browser",
-    // "rpc-websockets": "rpc-websockets",
   },
 
-  build: {
-    transpile: ["rpc-websockets", "@solana/web3.js", "jayson", "bn.js"]
-  },
+  ...(process.env.NODE_ENV === "production" && {
+    build: {
+      transpile: ["rpc-websockets", "@solana/web3.js", "jayson", "bn.js"],
+    },
+  }),
 
   routeRules: {
     "/api/**": {
-      cors: true
-    }
+      cors: true,
+    },
   },
 
   sourcemap: {
@@ -42,7 +42,7 @@ export default defineNuxtConfig({
   },
 
   future: {
-    compatibilityVersion: 4
+    compatibilityVersion: 4,
   },
   experimental: {
     clientNodeCompat: true,
@@ -53,7 +53,8 @@ export default defineNuxtConfig({
 
   nitro: {
     replace: {
-      "import 'jayson/lib/client/browser';": "import 'jayson/lib/client/browser/index.js';",
+      "import 'jayson/lib/client/browser';":
+        "import 'jayson/lib/client/browser/index.js';",
     },
     rollupConfig: {
       external: [
@@ -70,17 +71,22 @@ export default defineNuxtConfig({
 
   vite: {
     esbuild: {
-      target: "esnext"
+      target: "esnext",
     },
     build: {
       target: "esnext",
     },
     optimizeDeps: {
-      include: ["buffer"],
-      exclude: ["rpc-websockets"],
+      include: [
+        "buffer",
+        ...(process.env.NODE_ENV === "production" ? [] : ["rpc-websockets"]),
+      ],
+      ...(process.env.NODE_ENV === "production" && {
+        exclude: ["rpc-websockets"],
+      }),
       esbuildOptions: {
-        target: "esnext"
-      }
+        target: "esnext",
+      },
     },
     plugins: [
       nodePolyfills({
@@ -88,8 +94,8 @@ export default defineNuxtConfig({
       }),
     ],
     define: {
-      "process.env.BROWSER": true
-    }
+      "process.env.BROWSER": true,
+    },
   },
 
   eslint: {
@@ -99,15 +105,15 @@ export default defineNuxtConfig({
         braceStyle: "1tbs",
         quotes: "double",
         semi: true,
-        indent: 2
-      }
-    }
+        indent: 2,
+      },
+    },
   },
 
   supabase: {
-    redirect: false
+    redirect: false,
   },
   uiPro: {
-    license: process.env.UI_PRO_LICENSE_KEY
+    license: process.env.UI_PRO_LICENSE_KEY,
   },
 });
