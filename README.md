@@ -36,6 +36,15 @@ Make sure to install dependencies:
 bun install
 ```
 
+Create a new environment file:
+
+```
+cp .env.example .env
+```
+
+Get environment variables from Francis at `jose@sonic.game` and supply them in the file. 
+
+
 ## Development Server
 
 Start the development server on `http://localhost:3000`:
