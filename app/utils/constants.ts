@@ -10,6 +10,10 @@ export const RPC_CONNECTION_TRANSPORTS = [
   "https://sonic.helius-rpc.com"
 ];
 
+export const TESTNET_RPC_CONNECTION_TRANSPORTS = [
+  "https://api.testnet.sonic.game/"
+];
+
 // Sonic SVM Squads V4 Program Address
 export const SQUADS_V4_PROGRAM_ID = new PublicKey("sqdsFBUUwbsuoLUhoWdw343Je6mvn7dGVVRYCa4wtqJ");
 
