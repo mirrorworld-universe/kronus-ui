@@ -3,6 +3,11 @@ import { PublicKey } from "@solana/web3.js";
 import type { StepperItem } from "@nuxt/ui";
 import * as multisig from "@sqds/multisig";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
+import { useConnection } from "~/composables/useConnection";
+import { NETWORK_OPTIONS } from "~/utils/constants";
+
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
 
 const { Multisig } = multisig.accounts;
 defineRouteRules({
@@ -50,6 +55,15 @@ const multisigName = ref("");
 const importedMultisigData = ref();
 
 const { walletAddress } = useWalletConnection();
+
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
 
 const isDone = computed(() => !!importedMultisigData.value && !isLoading.value);
 
@@ -205,6 +219,14 @@ async function importMultisig() {
                 class="w-full"
                 size="lg"
                 placeholder="Enter your multisig public key"
+              />
+            </UFormField>
+            <UFormField class="w-full" label="Network" required>
+              <USelect
+                v-model="network"
+                :items="networkOptions.map(option => option.value)"
+                placeholder="Select network"
+                class="w-full"
               />
             </UFormField>
             <UFormField class="w-full" label="Name" required>
