@@ -1,0 +1,843 @@
+{
+  "id": "0cdea342-ad8c-4b13-a7cd-3f7040901c54",
+  "prevId": "5a23a5df-9381-45cc-80d3-a20f57ed21ad",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.contacts": {
+      "name": "contacts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "contacts_public_key_unique": {
+          "name": "contacts_public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.multisig_members": {
+      "name": "multisig_members",
+      "schema": "",
+      "columns": {
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "multisig_members_multisig_id_multisigs_id_fk": {
+          "name": "multisig_members_multisig_id_multisigs_id_fk",
+          "tableFrom": "multisig_members",
+          "tableTo": "multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "multisig_members_multisig_id_public_key_pk": {
+          "name": "multisig_members_multisig_id_public_key_pk",
+          "columns": [
+            "multisig_id",
+            "public_key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.multisigs": {
+      "name": "multisigs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "create_key": {
+          "name": "create_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_vault": {
+          "name": "first_vault",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "threshold": {
+          "name": "threshold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator": {
+          "name": "creator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "multisigs_public_key_unique": {
+          "name": "multisigs_public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_key"
+          ]
+        },
+        "multisigs_create_key_unique": {
+          "name": "multisigs_create_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "create_key"
+          ]
+        },
+        "multisigs_first_vault_unique": {
+          "name": "multisigs_first_vault_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "first_vault"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_contacts": {
+      "name": "testnet_contacts",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tags": {
+          "name": "tags",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "testnet_contacts_public_key_unique": {
+          "name": "testnet_contacts_public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_multisig_members": {
+      "name": "testnet_multisig_members",
+      "schema": "",
+      "columns": {
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "testnet_multisig_members_multisig_id_testnet_multisigs_id_fk": {
+          "name": "testnet_multisig_members_multisig_id_testnet_multisigs_id_fk",
+          "tableFrom": "testnet_multisig_members",
+          "tableTo": "testnet_multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "testnet_multisig_members_multisig_id_public_key_pk": {
+          "name": "testnet_multisig_members_multisig_id_public_key_pk",
+          "columns": [
+            "multisig_id",
+            "public_key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_multisigs": {
+      "name": "testnet_multisigs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "create_key": {
+          "name": "create_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "first_vault": {
+          "name": "first_vault",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "threshold": {
+          "name": "threshold",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creator": {
+          "name": "creator",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "testnet_multisigs_public_key_unique": {
+          "name": "testnet_multisigs_public_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "public_key"
+          ]
+        },
+        "testnet_multisigs_create_key_unique": {
+          "name": "testnet_multisigs_create_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "create_key"
+          ]
+        },
+        "testnet_multisigs_first_vault_unique": {
+          "name": "testnet_multisigs_first_vault_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "first_vault"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_transaction_signatures": {
+      "name": "testnet_transaction_signatures",
+      "schema": "",
+      "columns": {
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "testnet_transaction_signatures_transaction_id_testnet_transactions_id_fk": {
+          "name": "testnet_transaction_signatures_transaction_id_testnet_transactions_id_fk",
+          "tableFrom": "testnet_transaction_signatures",
+          "tableTo": "testnet_transactions",
+          "columnsFrom": [
+            "transaction_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "testnet_transaction_signatures_transaction_id_public_key_pk": {
+          "name": "testnet_transaction_signatures_transaction_id_public_key_pk",
+          "columns": [
+            "transaction_id",
+            "public_key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_transactions": {
+      "name": "testnet_transactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "transaction_pda": {
+          "name": "transaction_pda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_index": {
+          "name": "vault_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_account": {
+          "name": "vault_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "testnet_transactions_multisig_id_testnet_multisigs_id_fk": {
+          "name": "testnet_transactions_multisig_id_testnet_multisigs_id_fk",
+          "tableFrom": "testnet_transactions",
+          "tableTo": "testnet_multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.testnet_vaults": {
+      "name": "testnet_vaults",
+      "schema": "",
+      "columns": {
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_index": {
+          "name": "vault_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "testnet_vaults_multisig_id_testnet_multisigs_id_fk": {
+          "name": "testnet_vaults_multisig_id_testnet_multisigs_id_fk",
+          "tableFrom": "testnet_vaults",
+          "tableTo": "testnet_multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "testnet_vaults_multisig_id_vault_index_pk": {
+          "name": "testnet_vaults_multisig_id_vault_index_pk",
+          "columns": [
+            "multisig_id",
+            "vault_index"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transaction_signatures": {
+      "name": "transaction_signatures",
+      "schema": "",
+      "columns": {
+        "transaction_id": {
+          "name": "transaction_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transaction_signatures_transaction_id_transactions_id_fk": {
+          "name": "transaction_signatures_transaction_id_transactions_id_fk",
+          "tableFrom": "transaction_signatures",
+          "tableTo": "transactions",
+          "columnsFrom": [
+            "transaction_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "transaction_signatures_transaction_id_public_key_pk": {
+          "name": "transaction_signatures_transaction_id_public_key_pk",
+          "columns": [
+            "transaction_id",
+            "public_key"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.transactions": {
+      "name": "transactions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "transaction_pda": {
+          "name": "transaction_pda",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_index": {
+          "name": "vault_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_account": {
+          "name": "vault_account",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadata": {
+          "name": "metadata",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "transactions_multisig_id_multisigs_id_fk": {
+          "name": "transactions_multisig_id_multisigs_id_fk",
+          "tableFrom": "transactions",
+          "tableTo": "multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.vaults": {
+      "name": "vaults",
+      "schema": "",
+      "columns": {
+        "multisig_id": {
+          "name": "multisig_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vault_index": {
+          "name": "vault_index",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "public_key": {
+          "name": "public_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "vaults_multisig_id_multisigs_id_fk": {
+          "name": "vaults_multisig_id_multisigs_id_fk",
+          "tableFrom": "vaults",
+          "tableTo": "multisigs",
+          "columnsFrom": [
+            "multisig_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "vaults_multisig_id_vault_index_pk": {
+          "name": "vaults_multisig_id_vault_index_pk",
+          "columns": [
+            "multisig_id",
+            "vault_index"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

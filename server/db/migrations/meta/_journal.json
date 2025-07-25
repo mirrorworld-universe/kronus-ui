@@ -15,6 +15,13 @@
       "when": 1746610133448,
       "tag": "0001_perpetual_felicia_hardy",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1753417882984,
+      "tag": "0002_square_nick_fury",
+      "breakpoints": true
     }
   ]
 }
