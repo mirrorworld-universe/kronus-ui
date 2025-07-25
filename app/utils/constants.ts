@@ -1,5 +1,7 @@
 import { PublicKey } from "@solana/web3.js";
 
+export type Network = "mainnet" | "testnet";
+
 export const SUPPORTED_WALLETS = [
   "Backpack",
   "Nightly",
@@ -13,6 +15,11 @@ export const RPC_CONNECTION_TRANSPORTS = [
 export const TESTNET_RPC_CONNECTION_TRANSPORTS = [
   "https://api.testnet.sonic.game/"
 ];
+
+export const NETWORK_OPTIONS = [
+  { label: "Mainnet", value: "mainnet", transports: RPC_CONNECTION_TRANSPORTS },
+  { label: "Testnet", value: "testnet", transports: TESTNET_RPC_CONNECTION_TRANSPORTS }
+] as const;
 
 // Sonic SVM Squads V4 Program Address
 export const SQUADS_V4_PROGRAM_ID = new PublicKey("sqdsFBUUwbsuoLUhoWdw343Je6mvn7dGVVRYCa4wtqJ");

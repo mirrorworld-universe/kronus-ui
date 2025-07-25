@@ -1,23 +1,31 @@
 import { Connection } from "@solana/web3.js";
-import { RPC_CONNECTION_TRANSPORTS } from "./constants";
+import { NETWORK_OPTIONS, type Network } from "./constants";
 
 class ConnectionManager {
   private connections: Map<string, Connection> = new Map();
   private latencies: Map<string, number> = new Map();
   private currentEndpoint: string;
   private checkInterval: NodeJS.Timeout | null = null;
+  private network: Network = "mainnet";
+  private transports: string[];
 
-  constructor() {
-    if (!RPC_CONNECTION_TRANSPORTS.length) {
-      throw new Error("No RPC endpoints configured");
+  constructor(network: Network = "mainnet") {
+    this.network = network;
+    const networkOption = NETWORK_OPTIONS.find((n) => n.value === network);
+    if (!networkOption) {
+      throw new Error(`Network '${network}' is not supported`);
     }
-    this.currentEndpoint = RPC_CONNECTION_TRANSPORTS[0]!;
+    this.transports = networkOption.transports;
+    if (!this.transports.length) {
+      throw new Error("No RPC endpoints configured for network: " + network);
+    }
+    this.currentEndpoint = this.transports[0]!;
     this.initializeConnections();
     this.startHealthCheck();
   }
 
   private initializeConnections() {
-    RPC_CONNECTION_TRANSPORTS.forEach((endpoint) => {
+    this.transports.forEach((endpoint) => {
       this.connections.set(endpoint, new Connection(endpoint, "confirmed"));
       this.latencies.set(endpoint, 0);
     });
@@ -43,7 +51,7 @@ class ConnectionManager {
 
     this.checkInterval = setInterval(async () => {
       await Promise.all(
-        RPC_CONNECTION_TRANSPORTS.map(endpoint => this.checkEndpointHealth(endpoint))
+        this.transports.map((endpoint) => this.checkEndpointHealth(endpoint))
       );
 
       // Find endpoint with lowest latency
@@ -58,7 +66,9 @@ class ConnectionManager {
       });
 
       if (bestEndpoint !== this.currentEndpoint) {
-        console.log(`Switching RPC endpoint to ${bestEndpoint} (latency: ${bestLatency}ms)`);
+        console.log(
+          `Switching RPC endpoint to ${bestEndpoint} (latency: ${bestLatency}ms)`
+        );
         this.currentEndpoint = bestEndpoint;
       }
     }, 30000); // Check every 30 seconds
@@ -66,6 +76,34 @@ class ConnectionManager {
 
   public getCurrentConnection(): Connection {
     return this.connections.get(this.currentEndpoint)!;
+  }
+
+  public getNetwork(): Network {
+    return this.network;
+  }
+
+  public setNetwork(network: Network) {
+    if (network === this.network) return;
+    const networkOption = NETWORK_OPTIONS.find((n) => n.value === network);
+    if (!networkOption) {
+      throw new Error(`Network '${network}' is not supported`);
+    }
+    this.network = network;
+    this.transports = networkOption.transports;
+    if (!this.transports.length) {
+      throw new Error("No RPC endpoints configured for network: " + network);
+    }
+    // Clean up old connections and latencies
+    this.connections.clear();
+    this.latencies.clear();
+    this.currentEndpoint = this.transports[0]!;
+    this.initializeConnections();
+    // Restart health check if running in browser
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+      this.startHealthCheck();
+    }
   }
 
   public cleanup() {
