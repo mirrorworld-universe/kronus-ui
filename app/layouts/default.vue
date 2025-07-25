@@ -4,6 +4,8 @@ import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import { useTransactions } from "~/composables/queries/useTransactions";
 import type { IMultisig } from "~/types/squads";
+import { useConnection } from "~/composables/useConnection";
+import { NETWORK_OPTIONS } from "~/utils/constants";
 
 const route = useRoute();
 const toast = useToast();
@@ -131,6 +133,18 @@ const groups = computed(() => [{
 
 const { refresh } = useRefresh(TRANSACTIONS_PAGE_QUERY_KEY);
 
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
+
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
+
 onMounted(async () => {
   emitter.on("transactions:refresh", refresh);
 
@@ -176,6 +190,15 @@ onMounted(async () => {
           </template>
 
           <template #default="{ collapsed }">
+
+            <UFormField label="Network" class="w-full mb-2">
+              <USelect
+                v-model="network"
+                :items="networkOptions.map(option => option.value)"
+                placeholder="Select network"
+                class="w-full"
+              />
+            </UFormField>
             <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
 
             <UNavigationMenu
