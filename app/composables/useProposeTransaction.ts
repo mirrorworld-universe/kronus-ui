@@ -10,7 +10,9 @@ import { h } from "vue";
 import type { createTransactionSchema } from "~~/server/validations/schemas";
 import { UIcon } from "#components";
 
-export type CreateTransactionMetadata = z.infer<typeof createTransactionSchema>["metadata"];
+export type CreateTransactionMetadata = z.infer<
+  typeof createTransactionSchema
+>["metadata"];
 
 export async function createSquadsVaultTransaction(
   tx: Transaction,
@@ -19,7 +21,7 @@ export async function createSquadsVaultTransaction(
   creator: PublicKey,
   wallet: WalletStore,
   toast: ReturnType<typeof useToast>,
-  metadata?: CreateTransactionMetadata,
+  metadata?: CreateTransactionMetadata
 ) {
   const multisigPda = new PublicKey(multisigAddress);
   const connection = connectionManager.getCurrentConnection();
@@ -30,56 +32,84 @@ export async function createSquadsVaultTransaction(
     TOASTS.push(message);
     toast.update(toastId, {
       color: "neutral",
-      description: () => h("div", {
-        class: "flex flex-col gap-2",
-      }, [
-        TOASTS.map((text, index) => {
-          const isLastToast = index + 1 >= TOASTS.length;
-          return h("div", { class: "flex gap-2 items-center justify-start text-base text-(--ui-text-highlighted)" }, [
-            h(UIcon, { name: isLastToast ? "svg-spinners:bars-rotate-fade" : "material-symbols:check-rounded", color: isLastToast ? "neutral" : "success" }),
-            h("span", { class: "text-sm" }, text)
-          ]);
-        })
-      ]),
+      description: () =>
+        h(
+          "div",
+          {
+            class: "flex flex-col gap-2",
+          },
+          [
+            TOASTS.map((text, index) => {
+              const isLastToast = index + 1 >= TOASTS.length;
+              return h(
+                "div",
+                {
+                  class:
+                    "flex gap-2 items-center justify-start text-base text-(--ui-text-highlighted)",
+                },
+                [
+                  h(UIcon, {
+                    name: isLastToast
+                      ? "svg-spinners:bars-rotate-fade"
+                      : "material-symbols:check-rounded",
+                    color: isLastToast ? "neutral" : "success",
+                  }),
+                  h("span", { class: "text-sm" }, text),
+                ]
+              );
+            }),
+          ]
+        ),
     });
   }
 
   function finishAll(toastId: string | number, signature: string) {
     toast.update(toastId, {
       color: "success",
-      description: () => h("div", {
-        class: "flex flex-col gap-1",
-      }, [
-        TOASTS.map((text) => {
-          return h("div", { class: "flex gap-2 items-center justify-start" }, [
-            h(UIcon, { name: "material-symbols:check-rounded" }),
-            h("span", { class: "text-sm" }, text)
-          ]);
-        })
-      ]),
-      actions: [{
-        icon: "i-lucide-link",
-        label: "View",
-        color: "success",
-        variant: "soft",
-        onClick: (e) => {
-          e?.stopPropagation();
-          window.open(`https://explorer.sonic.game/tx/${signature}`);
-        }
-      }]
+      description: () =>
+        h(
+          "div",
+          {
+            class: "flex flex-col gap-1",
+          },
+          [
+            TOASTS.map((text) => {
+              return h(
+                "div",
+                { class: "flex gap-2 items-center justify-start" },
+                [
+                  h(UIcon, { name: "material-symbols:check-rounded" }),
+                  h("span", { class: "text-sm" }, text),
+                ]
+              );
+            }),
+          ]
+        ),
+      actions: [
+        {
+          icon: "i-lucide-link",
+          label: "View",
+          color: "success",
+          variant: "soft",
+          onClick: (e) => {
+            e?.stopPropagation();
+            window.open(`https://explorer.sonic.game/tx/${signature}`);
+          },
+        },
+      ],
     });
   }
 
   const [vaultPda] = multisig.getVaultPda({
     multisigPda: multisigPda,
     index: vaultIndex,
-    programId: SQUADS_V4_PROGRAM_ID
+    programId: SQUADS_V4_PROGRAM_ID,
   });
   console.log("vaultPda: ", vaultPda.toBase58());
 
   const multisigInfo = await multisig.accounts.Multisig.fromAccountAddress(
     connection,
-    multisigPda,
+    multisigPda
   );
 
   const currentTransactionIndex = Number(multisigInfo.transactionIndex);
@@ -95,15 +125,19 @@ export async function createSquadsVaultTransaction(
     close: false,
     color: "neutral",
     duration: Infinity,
-    description: () => h("div", {
-      class: "flex flex-col gap-1",
-    }, [
-      h("div", { class: "flex gap-2 items-center justify-start" }, [
-        h(UIcon, { name: "svg-spinners:bars-rotate-fade" }),
-        h("span", { class: "text-sm" }, "Proposing Transaction")
-      ])
-    ]
-    ),
+    description: () =>
+      h(
+        "div",
+        {
+          class: "flex flex-col gap-1",
+        },
+        [
+          h("div", { class: "flex gap-2 items-center justify-start" }, [
+            h(UIcon, { name: "svg-spinners:bars-rotate-fade" }),
+            h("span", { class: "text-sm" }, "Proposing Transaction"),
+          ]),
+        ]
+      ),
   });
 
   const transactionMessage = new TransactionMessage({
@@ -112,10 +146,12 @@ export async function createSquadsVaultTransaction(
     instructions: tx.instructions,
   });
 
-  const __tx = new VersionedTransaction(transactionMessage.compileToV0Message());
+  const __tx = new VersionedTransaction(
+    transactionMessage.compileToV0Message()
+  );
   const serializedTransaction = __tx.serialize();
   const base64Transaction = Buffer.from(serializedTransaction).toString(
-    "base64",
+    "base64"
   );
 
   console.log("Base64 Transaction:", base64Transaction);
@@ -130,13 +166,13 @@ export async function createSquadsVaultTransaction(
       transactionMessage: transactionMessage,
       memo: metadata?.description || "",
       programId: SQUADS_V4_PROGRAM_ID,
-    },
+    }
   );
 
   const [transactionPda] = multisig.getTransactionPda({
     multisigPda,
     index: newTransactionIndex,
-    programId: SQUADS_V4_PROGRAM_ID
+    programId: SQUADS_V4_PROGRAM_ID,
   });
 
   const proposalCreateIx = multisig.instructions.proposalCreate({
@@ -144,22 +180,22 @@ export async function createSquadsVaultTransaction(
     transactionIndex: BigInt(newTransactionIndex),
     creator: creator,
     isDraft: false,
-    programId: SQUADS_V4_PROGRAM_ID
+    programId: SQUADS_V4_PROGRAM_ID,
   });
 
-  const approveTransactionProposalInstruction
-    = multisig.instructions.proposalApprove({
+  const approveTransactionProposalInstruction =
+    multisig.instructions.proposalApprove({
       multisigPda: multisigPda,
       transactionIndex: BigInt(newTransactionIndex),
       member: creator,
-      programId: SQUADS_V4_PROGRAM_ID
+      programId: SQUADS_V4_PROGRAM_ID,
     });
 
   const transaction: Transaction = new Transaction();
   transaction.add(
     vaultTransactionCreateIx,
     proposalCreateIx,
-    approveTransactionProposalInstruction,
+    approveTransactionProposalInstruction
   );
 
   transaction.feePayer = creator;
@@ -196,19 +232,22 @@ export async function createSquadsVaultTransaction(
 
   // Store multisig data in D1
   try {
-    const transaction = await $fetch(`/api/vaults/${multisigAddress}/transactions`, {
-      method: "POST",
-      body: {
-        vault_index: vaultIndex,
-        transaction_pda: transactionPda.toBase58(),
-        vault_account: vaultPda.toBase58(),
-        metadata
+    const transaction = await $fetch(
+      `/api/vaults/${multisigAddress}/transactions?network=mainnet`,
+      {
+        method: "POST",
+        body: {
+          vault_index: vaultIndex,
+          transaction_pda: transactionPda.toBase58(),
+          vault_account: vaultPda.toBase58(),
+          metadata,
+        },
       }
-    });
+    );
 
     return {
       signature,
-      transaction
+      transaction,
     };
   } catch (error) {
     console.error("Failed to store transaction metadata data:", error);

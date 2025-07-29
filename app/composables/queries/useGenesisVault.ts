@@ -6,17 +6,26 @@ export async function useGenesisVault() {
   const route = useRoute();
   const { walletAddress, connected } = useWalletConnection();
 
-  const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
-  const { data: multsigsByMember } = await useAsyncData(MULTISIG_BY_MEMBER_QUERY_KEY.value, () => {
-    if (!walletAddress.value || !connected.value) return Promise.resolve([]);
+  const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() =>
+    keys.multisigsByMember(walletAddress.value!)
+  );
+  const { data: multsigsByMember } = await useAsyncData(
+    MULTISIG_BY_MEMBER_QUERY_KEY.value,
+    () => {
+      if (!walletAddress.value || !connected.value) return Promise.resolve([]);
 
-    const cachedValue = useNuxtData<IMultisig[]>(MULTISIG_BY_MEMBER_QUERY_KEY.value).data.value;
-    if (cachedValue) {
-      return Promise.resolve(cachedValue);
-    } else {
-      return $fetch(`/api/multisigs/member/${walletAddress.value}`);
+      const cachedValue = useNuxtData<IMultisig[]>(
+        MULTISIG_BY_MEMBER_QUERY_KEY.value
+      ).data.value;
+      if (cachedValue) {
+        return Promise.resolve(cachedValue);
+      } else {
+        return $fetch(
+          `/api/multisigs/member/${walletAddress.value}?network=mainnet`
+        );
+      }
     }
-  });
+  );
 
   if (multsigsByMember.value?.length && multsigsByMember.value?.length < 1) {
     console.debug("no vaults from this wallet address");
@@ -24,29 +33,50 @@ export async function useGenesisVault() {
   }
 
   const firstMultisig = computed(() => multsigsByMember.value?.[0]);
-  const genesisVault = computed(() => route.params?.genesis_vault as unknown as string || firstMultisig.value?.first_vault || "");
+  const genesisVault = computed(
+    () =>
+      (route.params?.genesis_vault as unknown as string) ||
+      firstMultisig.value?.first_vault ||
+      ""
+  );
 
-  const currentMultisigAddress = computed(() => multsigsByMember.value!.find(ms => ms.first_vault === genesisVault.value)?.public_key || "");
+  const currentMultisigAddress = computed(
+    () =>
+      multsigsByMember.value!.find(
+        (ms: IMultisig) => ms.first_vault === genesisVault.value
+      )?.public_key || ""
+  );
 
-  watchEffect(() => console.log("currentMultisigAddress", currentMultisigAddress.value));
+  watchEffect(() =>
+    console.log("currentMultisigAddress", currentMultisigAddress.value)
+  );
 
   await useMultisig(currentMultisigAddress);
 
-  const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(currentMultisigAddress.value));
+  const CURRENT_MULTISIG_QUERY_KEY = computed(() =>
+    keys.vaults(currentMultisigAddress.value)
+  );
 
-  const { data: treasuryAccounts } = await useAsyncData(CURRENT_MULTISIG_QUERY_KEY.value, async () => {
-    if (!currentMultisigAddress.value) return null;
+  const { data: treasuryAccounts } = await useAsyncData(
+    CURRENT_MULTISIG_QUERY_KEY.value,
+    async () => {
+      if (!currentMultisigAddress.value) return null;
 
-    const cachedValue = useNuxtData<IVault[]>(CURRENT_MULTISIG_QUERY_KEY.value).data.value;
-    if (cachedValue) {
-      return Promise.resolve(cachedValue);
-    } else {
-      return $fetch(`/api/vaults/${currentMultisigAddress.value}`);
+      const cachedValue = useNuxtData<IVault[]>(
+        CURRENT_MULTISIG_QUERY_KEY.value
+      ).data.value;
+      if (cachedValue) {
+        return Promise.resolve(cachedValue);
+      } else {
+        return $fetch(
+          `/api/vaults/${currentMultisigAddress.value}?network=mainnet`
+        );
+      }
     }
-  });
+  );
 
   return {
     genesisVault,
-    treasuryAccounts
+    treasuryAccounts,
   };
 }

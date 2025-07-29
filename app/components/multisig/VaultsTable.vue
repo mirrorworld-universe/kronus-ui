@@ -186,7 +186,7 @@ async function handleCreateAccount() {
       programId: SQUADS_V4_PROGRAM_ID,
     });
 
-    const result = await $fetch(`/api/vaults/${props.multisigAddress}`, {
+    const result = await $fetch(`/api/vaults/${props.multisigAddress}?network=mainnet`, {
       method: "POST",
       body: {
         vault_index: nextVaultIndex,

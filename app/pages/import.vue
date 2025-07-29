@@ -137,7 +137,7 @@ async function importMultisig() {
 
     stepper.value?.next();
 
-    const importedMultisig = await $fetch("/api/import", {
+    const importedMultisig = await $fetch("/api/import?network=mainnet", {
       method: "POST",
       body: {
         address: multisigPda.toBase58(),

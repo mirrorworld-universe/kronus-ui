@@ -35,18 +35,28 @@ export async function useTransactions() {
   const route = useRoute();
 
   const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-  const __multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
+  const __multisig = computed(
+    () => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value
+  );
   const multisigAddress = computed(() => __multisig.value?.id || "");
 
-  const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(multisigAddress.value));
-  const { data: multisig } = useNuxtData<multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);
+  const ONCHAIN_MULTISIG_QUERY_KEY = computed(() =>
+    keys.onchainMultisig(multisigAddress.value)
+  );
+  const { data: multisig } = useNuxtData<multisig.generated.Multisig>(
+    ONCHAIN_MULTISIG_QUERY_KEY.value
+  );
   const { refresh } = await useRefresh(ONCHAIN_MULTISIG_QUERY_KEY);
 
-  watchOnce(multisig, async (multisigData) => {
-    if (!multisigData) await refresh();
-  }, {
-    immediate: true
-  });
+  watchOnce(
+    multisig,
+    async (multisigData) => {
+      if (!multisigData) await refresh();
+    },
+    {
+      immediate: true,
+    }
+  );
 
   const pageParam = computed(() => route.query.page as string);
   const page = computed(() => {
@@ -57,73 +67,116 @@ export async function useTransactions() {
     return _page;
   });
 
-  const totalTransactions = computed(() => Number(multisig.value ? multisig.value.transactionIndex : 0));
-  const totalPages = computed(() => Math.ceil(totalTransactions.value / TRANSACTIONS_PER_PAGE));
+  const totalTransactions = computed(() =>
+    Number(multisig.value ? multisig.value.transactionIndex : 0)
+  );
+  const totalPages = computed(() =>
+    Math.ceil(totalTransactions.value / TRANSACTIONS_PER_PAGE)
+  );
 
-  const startIndex = computed(() => totalTransactions.value - (page.value - 1) * TRANSACTIONS_PER_PAGE);
-  const endIndex = computed(() => Math.max(startIndex.value - TRANSACTIONS_PER_PAGE + 1, 1));
+  const startIndex = computed(
+    () => totalTransactions.value - (page.value - 1) * TRANSACTIONS_PER_PAGE
+  );
+  const endIndex = computed(() =>
+    Math.max(startIndex.value - TRANSACTIONS_PER_PAGE + 1, 1)
+  );
 
-  const TRANSACTIONS_PAGE_QUERY_KEY = computed(() => keys.transactions({
-    startIndex: startIndex.value,
-    endIndex: endIndex.value,
-    programId: SQUADS_V4_PROGRAM_ID.toBase58(),
-    multisigAddress: multisigAddress.value,
-    page: page.value
-  }));
+  const TRANSACTIONS_PAGE_QUERY_KEY = computed(() =>
+    keys.transactions({
+      startIndex: startIndex.value,
+      endIndex: endIndex.value,
+      programId: SQUADS_V4_PROGRAM_ID.toBase58(),
+      multisigAddress: multisigAddress.value,
+      page: page.value,
+    })
+  );
 
   const connection = connectionManager.getCurrentConnection();
 
-  const { data: latestTransactions } = await useAsyncData(TRANSACTIONS_PAGE_QUERY_KEY.value, async () => {
-    if (!multisigAddress.value) return null;
+  const { data: latestTransactions } = await useAsyncData(
+    TRANSACTIONS_PAGE_QUERY_KEY.value,
+    async () => {
+      if (!multisigAddress.value) return null;
 
-    try {
-      const multisigPda = new PublicKey(multisigAddress.value);
-      const results: TransactionQueryResult[] = [];
+      try {
+        const multisigPda = new PublicKey(multisigAddress.value);
+        const results: TransactionQueryResult[] = [];
 
-      for (let i = 0; i <= startIndex.value - endIndex.value; i++) {
-        const index = BigInt(startIndex.value - i);
-        const transaction = await fetchTransactionData(connection, multisigPda, index, SQUADS_V4_PROGRAM_ID);
-        // @ts-expect-error doesnt't check null
-        results.push(transaction);
+        for (let i = 0; i <= startIndex.value - endIndex.value; i++) {
+          const index = BigInt(startIndex.value - i);
+          const transaction = await fetchTransactionData(
+            connection,
+            multisigPda,
+            index,
+            SQUADS_V4_PROGRAM_ID
+          );
+          // @ts-expect-error doesnt't check null
+          results.push(transaction);
+        }
+
+        const transactionsMetadata = await $fetch<
+          Database["public"]["Tables"]["transactions"]["Row"][]
+        >(`/api/vaults/${multisigAddress.value}/transactions?network=mainnet`);
+        const metadataCache: Record<
+          string,
+          (typeof transactionsMetadata)[number]
+        > = {};
+        for (let i = 0; i < transactionsMetadata.length; i++) {
+          const tx = transactionsMetadata[i]!;
+          metadataCache[tx.transaction_pda] = tx;
+        }
+
+        return results.map((result) => ({
+          ...result,
+          ...(metadataCache[result.transactionPda[0].toBase58()]
+            ? {
+                __metadata: metadataCache[result.transactionPda[0].toBase58()]!
+                  .metadata as MetadataField,
+              }
+            : {
+                __metadata: {
+                  type: TransactionType.Arbitrary,
+                } as MetadataField,
+              }),
+        }));
+      } catch {
+        return undefined;
       }
-
-      const transactionsMetadata = await $fetch<(Database["public"]["Tables"]["transactions"]["Row"])[]>(`/api/vaults/${multisigAddress.value}/transactions`);
-      const metadataCache: Record<string, (typeof transactionsMetadata)[number]> = {};
-      for (let i = 0; i < transactionsMetadata.length; i++) {
-        const tx = transactionsMetadata[i]!;
-        metadataCache[tx.transaction_pda] = tx;
-      }
-
-      return results.map(result => ({
-        ...result,
-        ...(metadataCache[result.transactionPda[0].toBase58()] ? { __metadata: metadataCache[result.transactionPda[0].toBase58()]!.metadata as MetadataField } : { __metadata: { type: TransactionType.Arbitrary } as MetadataField })
-      }));
-    } catch {
-      return undefined;
     }
-  });
+  );
 
-  const cachedlatestTransactions = computed(() => useNuxtData<(TransactionQueryResult & { __metadata: MetadataField })[]>(TRANSACTIONS_PAGE_QUERY_KEY.value).data.value);
+  const cachedlatestTransactions = computed(
+    () =>
+      useNuxtData<(TransactionQueryResult & { __metadata: MetadataField })[]>(
+        TRANSACTIONS_PAGE_QUERY_KEY.value
+      ).data.value
+  );
 
-  const transactions = computed(() => (cachedlatestTransactions.value || latestTransactions.value || []).map((transaction) => {
-    return {
+  const transactions = computed(() =>
+    (cachedlatestTransactions.value || latestTransactions.value || []).map(
+      (transaction) => {
+        return {
+          ...transaction,
+          proposal: transaction.proposal,
+          transactionPda: transaction.transactionPda[0].toBase58(),
+          proposalPda: transaction.proposalPda[0].toBase58(),
+          index: SerializableBigInt(transaction.index),
+        };
+      }
+    )
+  );
+
+  const parsedTransactions = computed(() =>
+    transactions.value.map((transaction) => ({
       ...transaction,
-      proposal: transaction.proposal,
-      transactionPda: transaction.transactionPda[0].toBase58(),
-      proposalPda: transaction.proposalPda[0].toBase58(),
-      index: SerializableBigInt(transaction.index)
-    };
-  }));
-
-  const parsedTransactions = computed(() => transactions.value.map(transaction => ({
-    ...transaction,
-    __parsed: classifyAndExtractTransaction(transaction)
-  })));
+      __parsed: classifyAndExtractTransaction(transaction),
+    }))
+  );
 
   function goToPage(page: number) {
     return {
       query: {
-        page
+        page,
       },
     };
   }
@@ -136,7 +189,7 @@ export async function useTransactions() {
     parsedTransactions,
     totalPages,
     multisigAddress,
-    TRANSACTIONS_PAGE_QUERY_KEY
+    TRANSACTIONS_PAGE_QUERY_KEY,
   };
 }
 
@@ -162,14 +215,20 @@ async function fetchTransactionData(
 
   let proposal;
   try {
-    proposal = await multisig.accounts.Proposal.fromAccountAddress(connection, proposalPda[0]);
+    proposal = await multisig.accounts.Proposal.fromAccountAddress(
+      connection,
+      proposalPda[0]
+    );
   } catch {
     proposal = null;
   }
 
   let transaction;
   try {
-    transaction = await multisig.accounts.VaultTransaction.fromAccountAddress(connection, transactionPda[0]);
+    transaction = await multisig.accounts.VaultTransaction.fromAccountAddress(
+      connection,
+      transactionPda[0]
+    );
   } catch {
     transaction = null;
   }

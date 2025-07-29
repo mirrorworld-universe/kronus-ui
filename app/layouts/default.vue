@@ -26,7 +26,7 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
   if (newMultisigQueryKey !== oldMultisigQueryKey) {
     console.debug("genesis vault changed. invalidating multisig query data...");
     await refreshMultisig(async () => {
-      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}?network=mainnet`));
     });
   }
 });

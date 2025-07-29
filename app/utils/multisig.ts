@@ -13,11 +13,12 @@ export async function createMultisig(
   rentCollector: PublicKey | null,
   name: string,
   description: string,
-  memo: string,
+  memo: string
 ) {
   console.info("started createMultisig");
 
-  if (!wallet.publicKey.value || !wallet.connected) throw new Error("Wallet not connected.");
+  if (!wallet.publicKey.value || !wallet.connected)
+    throw new Error("Wallet not connected.");
 
   const createKeyPair = Keypair.generate();
   const createKey = createKeyPair.publicKey;
@@ -75,7 +76,7 @@ export async function createMultisig(
 
         // Store multisig data in D1
         try {
-          const firstMultisig = await $fetch("/api/multisigs", {
+          const firstMultisig = await $fetch("/api/multisigs?network=mainnet", {
             method: "POST",
             body: {
               address: multisigPda.toBase58(),
@@ -85,13 +86,13 @@ export async function createMultisig(
               name,
               description,
               created_at: Math.floor(Date.now() / 1000),
-              members: members.map(m => ({
+              members: members.map((m) => ({
                 address: m.key.toBase58(),
-                permissions: m.permissions
+                permissions: m.permissions,
               })),
               threshold,
-              vault_index: 0
-            }
+              vault_index: 0,
+            },
           });
 
           return {
@@ -119,9 +120,7 @@ export interface VaultInfo {
   name: string;
 }
 
-export async function listMultisigVaults(
-  multisigAddress: PublicKey
-) {
+export async function listMultisigVaults(multisigAddress: PublicKey) {
   try {
     const vaultIndices = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     const vaultIndexPromises = vaultIndices.map((index) => {
@@ -132,7 +131,7 @@ export async function listMultisigVaults(
       });
       return {
         vaultAccount,
-        vaultIndex: index
+        vaultIndex: index,
       };
     });
     const vaults = await Promise.all(vaultIndexPromises);
