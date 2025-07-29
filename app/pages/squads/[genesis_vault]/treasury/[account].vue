@@ -4,10 +4,6 @@ import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import TokensTable from "~/components/multisig/TokensTable.vue";
 import type { IMultisig, IVault } from "~/types/squads";
 
-defineRouteRules({
-  ssr: false
-});
-
 const wallet = useWallet();
 const route = useRoute();
 
