@@ -8,6 +8,10 @@ import {
   updateVaultSchema,
 } from "~~/server/validations/schemas";
 import { connectionManager } from "~/utils/connection.manager";
+import {
+  getNetworkFromQuery,
+  getSupabaseTableName,
+} from "../../db/network-tables";
 
 const { Multisig } = multisig.accounts;
 
@@ -15,6 +19,9 @@ export default eventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient<Database>(event);
     const multisig = getRouterParam(event, "multisig");
+    const query = getQuery(event);
+    const network = getNetworkFromQuery(query);
+    const tableName = getSupabaseTableName("vaults", network);
 
     const multisigPublicKey = solanaPublicKey.safeParse(multisig);
     // Validate that the multisig account exists
@@ -47,8 +54,8 @@ export default eventHandler(async (event) => {
       name: body.name,
     });
     // Insert the new vault into the database
-    const { data: vault, error } = await client
-      .from("vaults")
+    const { data: vault, error } = await (client as any)
+      .from(tableName)
       .upsert({
         multisig_id: validatedData.multisig_id,
         vault_index: validatedData.vault_index,

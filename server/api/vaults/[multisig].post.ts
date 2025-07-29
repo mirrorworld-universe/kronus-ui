@@ -3,8 +3,15 @@ import * as multisig from "@sqds/multisig";
 import { PublicKey } from "@solana/web3.js";
 import type { Database } from "../../schema.gen";
 import { serverSupabaseClient } from "#supabase/server";
-import { solanaPublicKey, createVaultSchema } from "~~/server/validations/schemas";
+import {
+  solanaPublicKey,
+  createVaultSchema,
+} from "~~/server/validations/schemas";
 import { connectionManager } from "~/utils/connection.manager";
+import {
+  getNetworkFromQuery,
+  getSupabaseTableName,
+} from "../../db/network-tables";
 
 const { Multisig } = multisig.accounts;
 
@@ -12,14 +19,18 @@ export default eventHandler(async (event) => {
   try {
     const client = await serverSupabaseClient<Database>(event);
     const multisig = getRouterParam(event, "multisig");
+    const query = getQuery(event);
+    const network = getNetworkFromQuery(query);
+    const tableName = getSupabaseTableName("vaults", network);
 
     const multisigPublicKey = solanaPublicKey.safeParse(multisig);
     // Validate that the multisig account exists
 
-    if (multisigPublicKey.error) throw createError({
-      statusCode: 400,
-      statusMessage: multisigPublicKey.error.errors.flat().join(),
-    });
+    if (multisigPublicKey.error)
+      throw createError({
+        statusCode: 400,
+        statusMessage: multisigPublicKey.error.errors.flat().join(),
+      });
 
     const connection = connectionManager.getCurrentConnection();
     const multisigAccount = await Multisig.fromAccountAddress(
@@ -27,10 +38,11 @@ export default eventHandler(async (event) => {
       new PublicKey(multisigPublicKey.data)
     );
 
-    if (!multisigAccount) throw createError({
-      statusCode: 500,
-      statusMessage: `Could not find multisig with address ${multisigPublicKey.data}`,
-    });
+    if (!multisigAccount)
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Could not find multisig with address ${multisigPublicKey.data}`,
+      });
 
     const body = await readBody(event);
 
@@ -39,11 +51,11 @@ export default eventHandler(async (event) => {
       multisig_id: multisigPublicKey.data,
       vault_index: body.vault_index,
       public_key: body.public_key,
-      name: body.name
+      name: body.name,
     });
     // Insert the new vault into the database
-    const { data: vault, error } = await client
-      .from("vaults")
+    const { data: vault, error } = await (client as any)
+      .from(tableName)
       .insert({
         multisig_id: validatedData.multisig_id,
         vault_index: validatedData.vault_index,
@@ -53,17 +65,18 @@ export default eventHandler(async (event) => {
       .select()
       .single();
 
-    if (error) throw createError({
-      statusCode: 500,
-      statusMessage: error.message,
-    });
+    if (error)
+      throw createError({
+        statusCode: 500,
+        statusMessage: error.message,
+      });
 
     return vault;
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createError({
         statusCode: 400,
-        statusMessage: error.errors.map(e => e.message).join(", "),
+        statusMessage: error.errors.map((e) => e.message).join(", "),
       });
     }
     throw error;

@@ -2,7 +2,7 @@ import { z } from "zod";
 import * as multisig from "@sqds/multisig";
 import { PublicKey } from "@solana/web3.js";
 import { db } from "../db";
-import { multisigs, multisigMembers, vaults } from "../db/schema";
+import { getTablesByNetwork, getNetworkFromQuery } from "../db/network-tables";
 import { importMultisigSchema } from "../validations/schemas";
 import { SQUADS_V4_PROGRAM_ID } from "../../app/utils/constants";
 // import type { Database } from "../schema.gen";
@@ -10,6 +10,9 @@ import { SQUADS_V4_PROGRAM_ID } from "../../app/utils/constants";
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event);
+  const query = getQuery(event);
+  const network = getNetworkFromQuery(query);
+  const tables = getTablesByNetwork(network);
 
   // const client = await serverSupabaseClient<Database>(event);
 
@@ -25,21 +28,24 @@ export default defineEventHandler(async (event) => {
     });
 
     // Create the multisig
-    const created_multisig = await db.insert(multisigs).values({
-      id: validatedData.address,
-      publicKey: validatedData.address,
-      createKey: validatedData.create_key,
-      firstVault: firstVaultPublicKey.toBase58(),
-      name: validatedData.name,
-      description: validatedData.description,
-      creator: validatedData.creator_address,
-      threshold: validatedData.threshold,
-    }).returning();
+    const created_multisig = await db
+      .insert(tables.multisigs)
+      .values({
+        id: validatedData.address,
+        publicKey: validatedData.address,
+        createKey: validatedData.create_key,
+        firstVault: firstVaultPublicKey.toBase58(),
+        name: validatedData.name,
+        description: validatedData.description,
+        creator: validatedData.creator_address,
+        threshold: validatedData.threshold,
+      })
+      .returning();
 
     // Add members
     await Promise.all(
-      validatedData.members.map(member =>
-        db.insert(multisigMembers).values({
+      validatedData.members.map((member) =>
+        db.insert(tables.multisigMembers).values({
           multisigId: validatedData.address,
           publicKey: member.address,
         })
@@ -47,33 +53,36 @@ export default defineEventHandler(async (event) => {
     );
 
     // Create initial vault
-    const targetVaults = validatedData.vaults.map(vault => ({
+    const targetVaults = validatedData.vaults.map((vault) => ({
       name: vault.name,
       publicKey: vault.public_key,
       multisigId: vault.multisig_id,
       vaultIndex: vault.vault_index,
     }));
 
-    const created_vaults = await db.insert(vaults).values(targetVaults).returning();
+    const created_vaults = await db
+      .insert(tables.vaults)
+      .values(targetVaults)
+      .returning();
 
     setResponseStatus(event, 201);
     return {
       created_multisig,
-      created_vaults
+      created_vaults,
     };
   } catch (error) {
     if (error instanceof z.ZodError) {
       throw createError({
         statusCode: 400,
         message: "Validation failed",
-        data: error.errors
+        data: error.errors,
       });
     }
 
     console.error("Error importing multisig:", error);
     throw createError({
       statusCode: 500,
-      message: "Failed to store multisig data"
+      message: "Failed to store multisig data",
     });
   }
 });
