@@ -8,6 +8,7 @@ import type { IMultisig } from "~/types/squads";
 import type { Database } from "~~/server/schema.gen";
 import type { createTransactionSchema } from "~~/server/validations/schemas";
 import { TransactionType } from "~~/server/validations/schemas";
+import { keys } from "~/utils/state.keys";
 
 export const TRANSACTIONS_PER_PAGE = 24;
 
@@ -34,14 +35,16 @@ export async function useTransactions() {
   const { genesisVault } = await useGenesisVault();
   const route = useRoute();
 
-  const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+  const { network } = useConnection();
+
+  const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
   const __multisig = computed(
     () => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value
   );
   const multisigAddress = computed(() => __multisig.value?.id || "");
 
   const ONCHAIN_MULTISIG_QUERY_KEY = computed(() =>
-    keys.onchainMultisig(multisigAddress.value)
+    keys.onchainMultisig(multisigAddress.value, network.value)
   );
   const { data: multisig } = useNuxtData<multisig.generated.Multisig>(
     ONCHAIN_MULTISIG_QUERY_KEY.value
@@ -88,6 +91,7 @@ export async function useTransactions() {
       programId: SQUADS_V4_PROGRAM_ID.toBase58(),
       multisigAddress: multisigAddress.value,
       page: page.value,
+      network: network.value,
     })
   );
 
@@ -116,7 +120,7 @@ export async function useTransactions() {
 
         const transactionsMetadata = await $fetch<
           Database["public"]["Tables"]["transactions"]["Row"][]
-        >(`/api/vaults/${multisigAddress.value}/transactions?network=mainnet`);
+        >(`/api/vaults/${multisigAddress.value}/transactions?network=${network.value}`);
         const metadataCache: Record<
           string,
           (typeof transactionsMetadata)[number]

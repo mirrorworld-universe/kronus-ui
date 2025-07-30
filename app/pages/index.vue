@@ -13,7 +13,9 @@ defineRouteRules({
 
 const { walletAddress } = useWalletConnection();
 
-const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
+const { network } = useConnection();
+
+const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!, network.value));
 
 const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
 const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);

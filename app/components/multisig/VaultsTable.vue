@@ -29,8 +29,9 @@ type TransformedVault = {
 
 const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
+const { network } = useConnection();
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress, network.value));
 
 const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
@@ -45,7 +46,7 @@ const vaults = computed(() => (data.value || []).map(vault => ({
 
 // ====== Vaults Token Balances ======
 const vaultsWithTokenBalances = computed(() => vaults.value.map((vault) => {
-  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.address))?.data.value || [];
+  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.address, network.value))?.data.value || [];
   const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
   return {
     ...vault,
@@ -186,7 +187,7 @@ async function handleCreateAccount() {
       programId: SQUADS_V4_PROGRAM_ID,
     });
 
-    const result = await $fetch(`/api/vaults/${props.multisigAddress}?network=mainnet`, {
+    const result = await $fetch(`/api/vaults/${props.multisigAddress}?network=${network.value}`, {
       method: "POST",
       body: {
         vault_index: nextVaultIndex,

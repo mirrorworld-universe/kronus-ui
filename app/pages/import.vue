@@ -87,10 +87,16 @@ async function importMultisig() {
     if (multisigName.value.trim() === "") throw new Error("Multisig name is empty");
 
     const connection = connectionManager.getCurrentConnection();
-    const multisigAccount = await Multisig.fromAccountAddress(
-      connection,
-      new PublicKey(multisigAddress.value)
-    );
+    let multisigAccount;
+    try {
+      multisigAccount = await Multisig.fromAccountAddress(
+        connection,
+        new PublicKey(multisigAddress.value)
+      );
+    } catch (error) {
+      console.error("Failed to fetch multisig account:", error, `on ${network.value}`);
+      throw new Error(`Unable to find Multisig account at ${multisigAddress.value} on ${network.value}. Please verify the multisig address is correct.`);
+    }
 
     if (!multisigAccount) throw new Error("Multisig account not found. Please ensure that the address is a Multisig PDA");
 
@@ -137,7 +143,7 @@ async function importMultisig() {
 
     stepper.value?.next();
 
-    const importedMultisig = await $fetch("/api/import?network=mainnet", {
+    const importedMultisig = await $fetch(`/api/import?network=${network.value}`, {
       method: "POST",
       body: {
         address: multisigPda.toBase58(),

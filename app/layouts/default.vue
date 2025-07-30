@@ -14,9 +14,11 @@ const router = useRouter();
 const { walletAddress, connected } = useWalletConnection();
 const isWalletConnected = computed(() => !!walletAddress.value && connected.value);
 const open = ref(false);
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
 
 const { genesisVault, treasuryAccounts: treasuryAccountsFallback } = await useGenesisVault();
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 
 const multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
 
@@ -26,7 +28,7 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
   if (newMultisigQueryKey !== oldMultisigQueryKey) {
     console.debug("genesis vault changed. invalidating multisig query data...");
     await refreshMultisig(async () => {
-      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}?network=mainnet`));
+      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}?network=${network.value}`));
     });
   }
 });
@@ -34,7 +36,7 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
 const multisigAddress = computed(() => multisig.value?.id || "");
 const _ = await useMultisig(multisigAddress);
 
-const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value, network.value));
 
 const treasuryAccounts = computed(() => (useNuxtData<{
   created_at: string | null;
@@ -133,8 +135,7 @@ const groups = computed(() => [{
 
 const { refresh } = useRefresh(TRANSACTIONS_PAGE_QUERY_KEY);
 
-const { network, setNetwork } = useConnection();
-const networkOptions = ref(NETWORK_OPTIONS);
+
 
 // Watch for network changes and update the connection manager
 watch(network, (newNetwork) => {

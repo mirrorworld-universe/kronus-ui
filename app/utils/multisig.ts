@@ -15,6 +15,7 @@ export async function createMultisig(
   description: string,
   memo: string
 ) {
+  const { network } = useConnection();
   console.info("started createMultisig");
 
   if (!wallet.publicKey.value || !wallet.connected)
@@ -76,24 +77,27 @@ export async function createMultisig(
 
         // Store multisig data in D1
         try {
-          const firstMultisig = await $fetch("/api/multisigs?network=mainnet", {
-            method: "POST",
-            body: {
-              address: multisigPda.toBase58(),
-              creator_address: creator.toBase58(),
-              create_key: createKey.toBase58(),
-              first_vault: firstVaultPublicKey.toBase58(),
-              name,
-              description,
-              created_at: Math.floor(Date.now() / 1000),
-              members: members.map((m) => ({
-                address: m.key.toBase58(),
-                permissions: m.permissions,
-              })),
-              threshold,
-              vault_index: 0,
-            },
-          });
+          const firstMultisig = await $fetch(
+            `/api/multisigs?network=${network.value}`,
+            {
+              method: "POST",
+              body: {
+                address: multisigPda.toBase58(),
+                creator_address: creator.toBase58(),
+                create_key: createKey.toBase58(),
+                first_vault: firstVaultPublicKey.toBase58(),
+                name,
+                description,
+                created_at: Math.floor(Date.now() / 1000),
+                members: members.map((m) => ({
+                  address: m.key.toBase58(),
+                  permissions: m.permissions,
+                })),
+                threshold,
+                vault_index: 0,
+              },
+            }
+          );
 
           return {
             signature,

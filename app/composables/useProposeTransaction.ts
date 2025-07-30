@@ -25,6 +25,7 @@ export async function createSquadsVaultTransaction(
 ) {
   const multisigPda = new PublicKey(multisigAddress);
   const connection = connectionManager.getCurrentConnection();
+  const { network } = useConnection();
 
   const TOASTS: string[] = [];
 
@@ -107,10 +108,29 @@ export async function createSquadsVaultTransaction(
   });
   console.log("vaultPda: ", vaultPda.toBase58());
 
-  const multisigInfo = await multisig.accounts.Multisig.fromAccountAddress(
-    connection,
-    multisigPda
-  );
+  let multisigInfo;
+  try {
+    multisigInfo = await multisig.accounts.Multisig.fromAccountAddress(
+      connection,
+      multisigPda
+    );
+  } catch (error) {
+    console.error(
+      "Failed to fetch multisig account:",
+      error,
+      `on ${network.value}`
+    );
+    toast.add({
+      color: "error",
+      title: "Error",
+      description: `Unable to find Multisig account at ${multisigPda.toBase58()}. Please verify the multisig address is correct.`,
+    });
+    throw new Error(
+      `Unable to find Multisig account at ${multisigPda.toBase58()} on ${
+        network.value
+      }`
+    );
+  }
 
   const currentTransactionIndex = Number(multisigInfo.transactionIndex);
   const newTransactionIndex = BigInt(currentTransactionIndex + 1);
@@ -233,7 +253,7 @@ export async function createSquadsVaultTransaction(
   // Store multisig data in D1
   try {
     const transaction = await $fetch(
-      `/api/vaults/${multisigAddress}/transactions?network=mainnet`,
+      `/api/vaults/${multisigAddress}/transactions?network=${network.value}`,
       {
         method: "POST",
         body: {

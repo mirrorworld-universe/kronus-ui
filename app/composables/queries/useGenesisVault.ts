@@ -1,13 +1,14 @@
 import { useMultisig } from "./useMultisigs";
 import type { IMultisig, IVault } from "~/types/squads";
+import { keys } from "~/utils/state.keys";
 
 export async function useGenesisVault() {
   const router = useRouter();
   const route = useRoute();
   const { walletAddress, connected } = useWalletConnection();
-
+  const { network } = useConnection();
   const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() =>
-    keys.multisigsByMember(walletAddress.value!)
+    keys.multisigsByMember(walletAddress.value!, network.value)
   );
   const { data: multsigsByMember } = await useAsyncData(
     MULTISIG_BY_MEMBER_QUERY_KEY.value,
@@ -21,7 +22,7 @@ export async function useGenesisVault() {
         return Promise.resolve(cachedValue);
       } else {
         return $fetch(
-          `/api/multisigs/member/${walletAddress.value}?network=mainnet`
+          `/api/multisigs/member/${walletAddress.value}?network=${network.value}`
         );
       }
     }
@@ -54,7 +55,7 @@ export async function useGenesisVault() {
   await useMultisig(currentMultisigAddress);
 
   const CURRENT_MULTISIG_QUERY_KEY = computed(() =>
-    keys.vaults(currentMultisigAddress.value)
+    keys.vaults(currentMultisigAddress.value, network.value)
   );
 
   const { data: treasuryAccounts } = await useAsyncData(
@@ -69,7 +70,7 @@ export async function useGenesisVault() {
         return Promise.resolve(cachedValue);
       } else {
         return $fetch(
-          `/api/vaults/${currentMultisigAddress.value}?network=mainnet`
+          `/api/vaults/${currentMultisigAddress.value}?network=${network.value}`
         );
       }
     }

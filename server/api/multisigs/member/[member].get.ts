@@ -1,21 +1,16 @@
-import type { Database } from "../../../schema.gen";
-import { serverSupabaseClient } from "#supabase/server";
+import { eq, inArray } from "drizzle-orm";
+import { db } from "../../../db";
 import { solanaPublicKey } from "~~/server/validations/schemas";
 import {
   getNetworkFromQuery,
-  getSupabaseTableName,
+  getTablesByNetwork,
 } from "../../../db/network-tables";
 
 export default eventHandler(async (event) => {
-  const client = await serverSupabaseClient<Database>(event);
   const member = getRouterParam(event, "member");
   const query = getQuery(event);
   const network = getNetworkFromQuery(query);
-  const multisigMembersTableName = getSupabaseTableName(
-    "multisig_members",
-    network
-  );
-  const multisigsTableName = getSupabaseTableName("multisigs", network);
+  const tables = getTablesByNetwork(network);
 
   const memberPublicKey = solanaPublicKey.safeParse(member);
   if (memberPublicKey.error)
@@ -24,17 +19,21 @@ export default eventHandler(async (event) => {
       statusMessage: memberPublicKey.error.errors.flat().join(),
     });
 
-  const { data: _multisig_members } = await (client as any)
-    .from(multisigMembersTableName)
+  const multisigMembers = await db
     .select()
-    .eq("public_key", memberPublicKey.data);
-  const { data } = await (client as any)
-    .from(multisigsTableName)
+    .from(tables.multisigMembers)
+    .where(eq(tables.multisigMembers.publicKey, memberPublicKey.data));
+
+  const multisigIds = multisigMembers.map((member) => member.multisigId);
+
+  if (multisigIds.length === 0) {
+    return [];
+  }
+
+  const data = await db
     .select()
-    .in(
-      "public_key",
-      (_multisig_members || [])?.map((member: any) => member.multisig_id)
-    );
+    .from(tables.multisigs)
+    .where(inArray(tables.multisigs.publicKey, multisigIds));
 
   return data;
 });

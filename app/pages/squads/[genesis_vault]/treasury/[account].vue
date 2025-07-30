@@ -10,21 +10,23 @@ const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
 const vaultAccount = computed(() => route.params.account as string);
 
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const { network } = useConnection();
+
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value, network.value));
 const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
-const VAULT_BALANCES_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value));
+const VAULT_BALANCES_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value, network.value));
 const { data: vaultBalances } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCES_QUERY_KEY.value);
 // const { refresh } = useRefresh(VAULT_BALANCES_QUERY_KEY);
 const pending = ref(false);
 watchOnce(vaultBalances, async (balancesData) => {
   if (!balancesData) {
     pending.value = true;
-    await useAsyncData(keys.tokenBalances(vaultAccount.value), () => $fetch(`/api/balances/${vaultAccount.value}`));
+    await useAsyncData(keys.tokenBalances(vaultAccount.value, network.value), () => $fetch(`/api/balances/${vaultAccount.value}`));
     pending.value = false;
   }
 }, {

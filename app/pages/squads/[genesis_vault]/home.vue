@@ -6,6 +6,7 @@ import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import type { IMultisig } from "~/types/squads";
+import { connectionManager } from "~/utils/connection.manager";
 
 // const wallet = useWallet();
 
@@ -14,10 +15,11 @@ defineRouteRules({
 });
 
 const route = useRoute();
+const network = connectionManager.getNetwork();
 const genesisVault = computed(() => route.params.genesis_vault as string);
 const { treasuryAccounts } = await useGenesisVault();
 
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 const { refresh } = await useRefresh(MULTISIG_QUERY_KEY);
 
@@ -46,7 +48,7 @@ const vaults = computed(() => treasuryAccounts.value);
 
 const totalMultisigsValue = computed(() => {
   return (vaults.value || []).map((vault) => {
-    const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.public_key))?.data.value || [];
+    const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.public_key, network))?.data.value || [];
     const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
     return vaultTokensValue;
   }).reduce((acc, curr) => acc + curr, 0);

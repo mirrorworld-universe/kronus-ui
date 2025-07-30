@@ -33,7 +33,9 @@ defineShortcuts({
 
 // const route = useRoute();
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress));
+const { network } = useConnection();
+
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress, network.value));
 
 const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
@@ -45,7 +47,7 @@ const vaults = computed(() => (data.value || []).map(vault => ({
 })).sort((a, b) => a.vault_index - b.vault_index));
 
 const sendingItems = computed(() => vaults.value.map((vault) => {
-  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.value))?.data.value || [];
+  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.value, network.value))?.data.value || [];
   const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
   return {
     ...vault,
@@ -74,7 +76,7 @@ const amountHelperText = computed(() => sendingVaultTokenValue.value ? `Balance:
 
 watchEffect(() => {
   (vaults.value || []).forEach((vault) => {
-    useAsyncData(keys.tokenBalances(vault.value), () => $fetch(`/api/balances/${vault.value}`));
+    useAsyncData(keys.tokenBalances(vault.value, network.value), () => $fetch(`/api/balances/${vault.value}`));
   });
 });
 
