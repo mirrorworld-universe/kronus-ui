@@ -41,8 +41,8 @@ const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 const vaults = computed(() => (data.value || []).map(vault => ({
   label: vault.name,
-  value: vault.public_key,
-  vault_index: vault.vault_index,
+  value: vault.publicKey,
+  vault_index: vault.vaultIndex,
   balance: 0,
 })).sort((a, b) => a.vault_index - b.vault_index));
 
@@ -227,7 +227,7 @@ async function proposeSendTokenTransaction() {
     if (result) {
       emitter.emit("transactions:refresh");
       console.log("successfully proposed transaction");
-      await router.push(`/squads/${genesisVault.value}/transactions`);
+      await router.push(`/squads/${genesisVault.value}/transactions?network=${network.value}`);
       open.value = false;
     }
   } catch (error: any) {

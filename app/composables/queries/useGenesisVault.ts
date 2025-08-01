@@ -1,5 +1,5 @@
 import { useMultisig } from "./useMultisigs";
-import type { IMultisig, IVault } from "~/types/squads";
+import type { IMultisig, IMultisigMember, IVault } from "~/types/squads";
 import { keys } from "~/utils/state.keys";
 
 export async function useGenesisVault() {
@@ -10,7 +10,7 @@ export async function useGenesisVault() {
   const MULTISIG_BY_MEMBER_QUERY_KEY = computed(() =>
     keys.multisigsByMember(walletAddress.value!, network.value)
   );
-  const { data: multsigsByMember } = await useAsyncData(
+  const { data: multsigsByMember } = await useAsyncData<IMultisig[]>(
     MULTISIG_BY_MEMBER_QUERY_KEY.value,
     () => {
       if (!walletAddress.value || !connected.value) return Promise.resolve([]);
@@ -30,22 +30,22 @@ export async function useGenesisVault() {
 
   if (multsigsByMember.value?.length && multsigsByMember.value?.length < 1) {
     console.debug("no vaults from this wallet address");
-    await router.push(`/create`);
+    await router.push(`/create?network=${network.value}`);
   }
 
   const firstMultisig = computed(() => multsigsByMember.value?.[0]);
   const genesisVault = computed(
     () =>
       (route.params?.genesis_vault as unknown as string) ||
-      firstMultisig.value?.first_vault ||
+      firstMultisig.value?.firstVault ||
       ""
   );
 
   const currentMultisigAddress = computed(
     () =>
       multsigsByMember.value!.find(
-        (ms: IMultisig) => ms.first_vault === genesisVault.value
-      )?.public_key || ""
+        (ms: IMultisig) => ms.firstVault === genesisVault.value
+      )?.publicKey || ""
   );
 
   watchEffect(() =>

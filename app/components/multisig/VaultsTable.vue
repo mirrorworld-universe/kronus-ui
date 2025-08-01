@@ -39,8 +39,8 @@ const { pending, refresh } = useRefresh(VAULTS_QUERY_KEY);
 
 const vaults = computed(() => (data.value || []).map(vault => ({
   name: vault.name,
-  address: vault.public_key,
-  vault_index: vault.vault_index,
+  address: vault.publicKey,
+  vault_index: vault.vaultIndex,
   balance: 0,
 })).sort((a, b) => a.vault_index - b.vault_index));
 
@@ -99,7 +99,7 @@ const columns = computed<TableColumn<TransformedVault>[]>(() => ([
       return h("span", {
         class: "flex flex-col gap-1",
       }, [
-        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}` }, () => row.original.name),
+        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}?network=${network.value}` }, () => row.original.name),
         h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
           h("a", {
             href: createSolanaExplorerUrl(row.getValue("address")),
@@ -196,7 +196,7 @@ async function handleCreateAccount() {
       }
     });
 
-    if (result.public_key) {
+    if (result?.publicKey) {
       toast.add({
         description: "Vault created!",
         color: "success"
