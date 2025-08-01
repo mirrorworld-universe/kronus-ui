@@ -6,9 +6,6 @@ import WalletConnectButton from "~/components/WalletConnectButton.vue";
 import { useConnection } from "~/composables/useConnection";
 import { NETWORK_OPTIONS } from "~/utils/constants";
 
-const { network, setNetwork } = useConnection();
-const networkOptions = ref(NETWORK_OPTIONS);
-
 const { Multisig } = multisig.accounts;
 defineRouteRules({
   ssr: false
@@ -19,6 +16,20 @@ definePageMeta({
 });
 
 const router = useRouter();
+
+const route = useRoute();
+
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
+
+// use mainnet if no network is provided and force URL to update
+if (!route.query.network) {
+  router.push(`${route.path}?network=mainnet`);
+}
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
 
 const isLoading = ref(false);
 
@@ -60,6 +71,7 @@ const { walletAddress } = useWalletConnection();
 watch(network, (newNetwork) => {
   if (newNetwork) {
     setNetwork(newNetwork);
+    router.push(`${route.path}?network=${newNetwork}`);
     // console.log("Network changed to", newNetwork);
     // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
   }
@@ -75,7 +87,7 @@ function reset() {
 }
 
 function finish() {
-  router.push(`/squads/${importedMultisigData.value.created_multisig.first_vault}/home`);
+  router.push(`/squads/${importedMultisigData.value.created_multisig.first_vault}/home?network=${network.value}`);
   reset();
 }
 
@@ -177,7 +189,7 @@ async function importMultisig() {
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigPda.toBase58());
-          router.push(`/squads/${firstVaultPublicKey}/treasury`);
+          router.push(`/squads/${firstVaultPublicKey}/treasury?network=${network.value}`);
         }
       }]
     });

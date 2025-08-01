@@ -13,27 +13,44 @@ defineRouteRules({
 
 const { walletAddress } = useWalletConnection();
 
-const { network } = useConnection();
+const { network, setNetwork } = useConnection();
+
+const router = useRouter();
+const route = useRoute();
+
+if (!route.query.network) {
+  router.push(`/?network=mainnet`);
+}
 
 const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!, network.value));
 
 const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
 const { refresh } = useRefresh(MULTISIGS_BY_MEMBER_QUERY_KEY);
 
-const router = useRouter();
-
 watchOnce(multisigs, (newValue) => {
   if (newValue && newValue.length > 0) {
-    const defaultVault = newValue[0]?.first_vault;
+    const defaultVault = newValue[0]?.firstVault;
     if (defaultVault) {
-      router.push(`/squads/${defaultVault}/home`);
+      refresh();
+      router.push(`/squads/${defaultVault}/home?network=${network.value}`);
     }
   } else {
-    router.push(`/create`);
+    router.push(`/create?network=${network.value}`);
   }
 }, {
   immediate: true
 });
+
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    router.push(`/?network=${newNetwork}`);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
+
 </script>
 
 <template>

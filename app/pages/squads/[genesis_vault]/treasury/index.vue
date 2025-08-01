@@ -24,7 +24,7 @@ const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 watchEffect(() => {
   (vaults.value || []).forEach((vault) => {
-    useAsyncData(keys.tokenBalances(vault.public_key, network.value), () => $fetch(`/api/balances/${vault.public_key}`));
+    useAsyncData(keys.tokenBalances(vault.publicKey, network.value), () => $fetch(`/api/balances/${vault.publicKey}`));
   });
 });
 </script>

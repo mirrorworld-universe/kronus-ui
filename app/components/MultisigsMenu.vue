@@ -3,13 +3,22 @@ import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import type { IMultisig } from "~/types/squads";
 
+import { multisigMembers } from "~~/server/db/schema";
+
 defineProps<{
   collapsed?: boolean;
 }>();
 
-const router = useRouter();
+const multisigMembersType = typeof multisigMembers;
 
-const { network } = useConnection();
+const router = useRouter();
+const route = useRoute();
+
+const { network, setNetwork } = useConnection();
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
 
 const { genesisVault } = await useGenesisVault();
 const { walletAddress } = await useWalletConnection();
@@ -55,7 +64,7 @@ const items = computed(() => {
     ...multisig,
     label: multisig.name,
     async onSelect() {
-      await router.push(`/squads/${multisig.first_vault}/home`);
+      await router.push(`/squads/${multisig.firstVault}/home?network=${network.value}`);
     }
   })), [CREATE_NEW_MULTISIG_ITEM, IMPORT_MULTISIG_ITEM]];
 });

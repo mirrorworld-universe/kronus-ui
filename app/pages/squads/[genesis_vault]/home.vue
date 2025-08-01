@@ -14,14 +14,31 @@ defineRouteRules({
   ssr: false
 });
 
+const router = useRouter();
+
 const route = useRoute();
-const network = connectionManager.getNetwork();
+
+const { network, setNetwork } = useConnection();
+
+if (route.query.network && route.query.network !== network.value) {
+  console.log(`network mismatch, setting network to ${route.query.network}`);
+  setNetwork(route.query.network as Network);
+}
+
 const genesisVault = computed(() => route.params.genesis_vault as string);
+
 const { treasuryAccounts } = await useGenesisVault();
 
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 const { refresh } = await useRefresh(MULTISIG_QUERY_KEY);
+
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    refresh();
+    setNetwork(newNetwork); 
+  }
+});
 
 watchOnce(multisig, async (multisigData) => {
   if (!multisigData) await refresh();
@@ -48,7 +65,7 @@ const vaults = computed(() => treasuryAccounts.value);
 
 const totalMultisigsValue = computed(() => {
   return (vaults.value || []).map((vault) => {
-    const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.public_key, network))?.data.value || [];
+    const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.publicKey, network.value))?.data.value || [];
     const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
     return vaultTokensValue;
   }).reduce((acc, curr) => acc + curr, 0);

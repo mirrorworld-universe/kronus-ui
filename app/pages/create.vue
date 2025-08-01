@@ -11,8 +11,23 @@ definePageMeta({
 });
 
 const router = useRouter();
+const route = useRoute();
+
+// use mainnet if no network is provided and force URL to update
+if (!route.query.network) {
+  router.push(`${route.path}?network=mainnet`);
+}
+
+const { network, setNetwork } = useConnection();
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
+
 function handleCancel() {
-  router.push(`/`);
+  if (!network.value) {
+    router.push(`/`);
+  }
 }
 </script>
 
@@ -30,7 +45,7 @@ function handleCancel() {
       </UDashboardNavbar>
     </template>
 
-    <template #body>
+    <template #body>``
       <CreateMultisig @cancel="handleCancel" />
     </template>
   </UDashboardPanel>

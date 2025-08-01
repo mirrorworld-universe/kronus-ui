@@ -94,7 +94,7 @@ const { handleSubmit, errors, values } = useForm<FormValues>({
 });
 
 const router = useRouter();
-
+const route = useRoute();
 const { value: name } = useField<string>("name");
 const { value: description } = useField<string>("description");
 const { value: members } = useField<Member[]>("members");
@@ -104,6 +104,7 @@ const { value: threshold } = useField<number>("threshold");
 watch(network, (newNetwork) => {
   if (newNetwork) {
     setNetwork(newNetwork);
+    router.push(`${route.path}?network=${newNetwork}`);
     // console.log("Network changed to", newNetwork);
     // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
   }
@@ -147,7 +148,7 @@ const onSubmit = handleSubmit(async (formValues) => {
       programId: SQUADS_V4_PROGRAM_ID,
     });
 
-    router.push(`/squads/${firstVaultPublicKey.toBase58()}/home`);
+    router.push(`/squads/${firstVaultPublicKey.toBase58()}/home?network=${network.value}`);
 
     toast.add({
       title: "Success!",
@@ -160,7 +161,7 @@ const onSubmit = handleSubmit(async (formValues) => {
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigAddress);
-          router.push(`/squads/${firstVaultPublicKey.toBase58()}/treasury`);
+          router.push(`/squads/${firstVaultPublicKey.toBase58()}/treasury?network=${network.value}`);
         }
       },
       {
