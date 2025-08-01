@@ -11,10 +11,16 @@ export function useConnection() {
     connectionManager.cleanup();
   });
 
+  const setNetwork = (newNetwork: Network) => {
+    connectionManager.setNetwork(newNetwork);
+    network.value = newNetwork;
+    connection.value = connectionManager.getCurrentConnection();
+  };
+
   return {
     connection,
     network,
     getCurrentConnection: () => connectionManager.getCurrentConnection(),
-    setNetwork: (network: Network) => connectionManager.setNetwork(network)
+    setNetwork
   };
 }
