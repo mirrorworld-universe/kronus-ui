@@ -13,10 +13,16 @@ const { Multisig } = multisig.accounts;
 
 export default eventHandler(async (event) => {
   try {
+    const serverNetwork = connectionManager.getNetwork();
+
     const multisig = getRouterParam(event, "multisig");
     const query = getQuery(event);
     const network = getNetworkFromQuery(query);
     const tables = getTablesByNetwork(network);
+
+    if (serverNetwork !== network) {
+      connectionManager.setNetwork(network);
+    }
 
     const multisigPublicKey = solanaPublicKey.safeParse(multisig);
 
