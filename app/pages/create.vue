@@ -45,7 +45,7 @@ function handleCancel() {
       </UDashboardNavbar>
     </template>
 
-    <template #body>``
+    <template #body>
       <CreateMultisig @cancel="handleCancel" />
     </template>
   </UDashboardPanel>
