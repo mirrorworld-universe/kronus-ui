@@ -9,12 +9,14 @@ defineRouteRules({
 });
 
 const route = useRoute();
+const { network } = useConnection();
 
 const genesisVault = computed(() => route.params.genesis_vault as string);
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 const { data: __multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 
-const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(__multisig.value!.id));
+const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(__multisig.value!.id, network.value));
 const { data: onchainMultisig } = useNuxtData<multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);
 
 const members = computed<IMember[]>(() => {

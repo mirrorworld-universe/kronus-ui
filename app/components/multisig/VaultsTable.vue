@@ -29,8 +29,9 @@ type TransformedVault = {
 
 const route = useRoute();
 const genesisVault = computed(() => route.params.genesis_vault as string);
+const { network } = useConnection();
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress, network.value));
 
 const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
@@ -38,14 +39,14 @@ const { pending, refresh } = useRefresh(VAULTS_QUERY_KEY);
 
 const vaults = computed(() => (data.value || []).map(vault => ({
   name: vault.name,
-  address: vault.public_key,
-  vault_index: vault.vault_index,
+  address: vault.publicKey,
+  vault_index: vault.vaultIndex,
   balance: 0,
 })).sort((a, b) => a.vault_index - b.vault_index));
 
 // ====== Vaults Token Balances ======
 const vaultsWithTokenBalances = computed(() => vaults.value.map((vault) => {
-  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.address))?.data.value || [];
+  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.address, network.value))?.data.value || [];
   const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
   return {
     ...vault,
@@ -98,7 +99,7 @@ const columns = computed<TableColumn<TransformedVault>[]>(() => ([
       return h("span", {
         class: "flex flex-col gap-1",
       }, [
-        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}` }, () => row.original.name),
+        h(NuxtLink, { class: "text-(--ui-text)", to: `/squads/${genesisVault.value}/treasury/${row.getValue("address")}?network=${network.value}` }, () => row.original.name),
         h("div", { class: "flex justify-start items-center gap-2 text-xs" }, [
           h("a", {
             href: createSolanaExplorerUrl(row.getValue("address")),
@@ -186,7 +187,7 @@ async function handleCreateAccount() {
       programId: SQUADS_V4_PROGRAM_ID,
     });
 
-    const result = await $fetch(`/api/vaults/${props.multisigAddress}`, {
+    const result = await $fetch(`/api/vaults/${props.multisigAddress}?network=${network.value}`, {
       method: "POST",
       body: {
         vault_index: nextVaultIndex,
@@ -195,7 +196,7 @@ async function handleCreateAccount() {
       }
     });
 
-    if (result.public_key) {
+    if (result?.publicKey) {
       toast.add({
         description: "Vault created!",
         color: "success"

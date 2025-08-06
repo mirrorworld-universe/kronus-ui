@@ -3,18 +3,29 @@ import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import type { IMultisig } from "~/types/squads";
 
+import { multisigMembers } from "~~/server/db/schema";
+
 defineProps<{
   collapsed?: boolean;
 }>();
 
+const multisigMembersType = typeof multisigMembers;
+
 const router = useRouter();
+const route = useRoute();
+
+const { network, setNetwork } = useConnection();
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
 
 const { genesisVault } = await useGenesisVault();
 const { walletAddress } = await useWalletConnection();
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
+const MULTISIGS_BY_MEMBER_QUERY_KEY = computed(() => keys.multisigsByMember(walletAddress.value!, network.value));
 
-await useAsyncData(MULTISIG_QUERY_KEY.value, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+await useAsyncData(MULTISIG_QUERY_KEY.value, () => $fetch(`/api/multisigs/${genesisVault.value}?network=${network.value}`));
 
 const { data: multisigs } = await useNuxtData<IMultisig[]>(MULTISIGS_BY_MEMBER_QUERY_KEY.value);
 const currentMultisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
@@ -25,7 +36,7 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
   if (newMultisigQueryKey !== oldMultisigQueryKey) {
     console.debug("genesis vault changed. invalidating multisig query data...");
     await refreshMultisig(async () => {
-      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}?network=${network.value}`));
     });
   }
 }, {
@@ -53,7 +64,7 @@ const items = computed(() => {
     ...multisig,
     label: multisig.name,
     async onSelect() {
-      await router.push(`/squads/${multisig.first_vault}/home`);
+      await router.push(`/squads/${multisig.firstVault}/home?network=${network.value}`);
     }
   })), [CREATE_NEW_MULTISIG_ITEM, IMPORT_MULTISIG_ITEM]];
 });

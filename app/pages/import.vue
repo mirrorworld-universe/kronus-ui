@@ -3,6 +3,8 @@ import { PublicKey } from "@solana/web3.js";
 import type { StepperItem } from "@nuxt/ui";
 import * as multisig from "@sqds/multisig";
 import WalletConnectButton from "~/components/WalletConnectButton.vue";
+import { useConnection } from "~/composables/useConnection";
+import { NETWORK_OPTIONS } from "~/utils/constants";
 
 const { Multisig } = multisig.accounts;
 defineRouteRules({
@@ -14,6 +16,20 @@ definePageMeta({
 });
 
 const router = useRouter();
+
+const route = useRoute();
+
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
+
+// use mainnet if no network is provided and force URL to update
+if (!route.query.network) {
+  router.push(`${route.path}?network=mainnet`);
+}
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
 
 const isLoading = ref(false);
 
@@ -51,6 +67,16 @@ const importedMultisigData = ref();
 
 const { walletAddress } = useWalletConnection();
 
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    router.push(`${route.path}?network=${newNetwork}`);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
+
 const isDone = computed(() => !!importedMultisigData.value && !isLoading.value);
 
 function reset() {
@@ -61,7 +87,7 @@ function reset() {
 }
 
 function finish() {
-  router.push(`/squads/${importedMultisigData.value.created_multisig.first_vault}/home`);
+  router.push(`/squads/${importedMultisigData.value.created_multisig.first_vault}/home?network=${network.value}`);
   reset();
 }
 
@@ -73,10 +99,16 @@ async function importMultisig() {
     if (multisigName.value.trim() === "") throw new Error("Multisig name is empty");
 
     const connection = connectionManager.getCurrentConnection();
-    const multisigAccount = await Multisig.fromAccountAddress(
-      connection,
-      new PublicKey(multisigAddress.value)
-    );
+    let multisigAccount;
+    try {
+      multisigAccount = await Multisig.fromAccountAddress(
+        connection,
+        new PublicKey(multisigAddress.value)
+      );
+    } catch (error) {
+      console.error("Failed to fetch multisig account:", error, `on ${network.value}`);
+      throw new Error(`Unable to find Multisig account at ${multisigAddress.value} on ${network.value}. Please verify the multisig address is correct.`);
+    }
 
     if (!multisigAccount) throw new Error("Multisig account not found. Please ensure that the address is a Multisig PDA");
 
@@ -123,7 +155,7 @@ async function importMultisig() {
 
     stepper.value?.next();
 
-    const importedMultisig = await $fetch("/api/import", {
+    const importedMultisig = await $fetch(`/api/import?network=${network.value}`, {
       method: "POST",
       body: {
         address: multisigPda.toBase58(),
@@ -157,7 +189,7 @@ async function importMultisig() {
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigPda.toBase58());
-          router.push(`/squads/${firstVaultPublicKey}/treasury`);
+          router.push(`/squads/${firstVaultPublicKey}/treasury?network=${network.value}`);
         }
       }]
     });
@@ -205,6 +237,14 @@ async function importMultisig() {
                 class="w-full"
                 size="lg"
                 placeholder="Enter your multisig public key"
+              />
+            </UFormField>
+            <UFormField class="w-full" label="Network" required>
+              <USelect
+                v-model="network"
+                :items="networkOptions.map(option => option.value)"
+                placeholder="Select network"
+                class="w-full"
               />
             </UFormField>
             <UFormField class="w-full" label="Name" required>

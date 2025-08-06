@@ -3,7 +3,9 @@ import { useGenesisVault } from "~/composables/queries/useGenesisVault";
 import { useMultisig } from "~/composables/queries/useMultisigs";
 import { useRefresh } from "~/composables/queries/useRefresh";
 import { useTransactions } from "~/composables/queries/useTransactions";
-import type { IMultisig } from "~/types/squads";
+import type { IMultisig, IVault } from "~/types/squads";
+import { useConnection } from "~/composables/useConnection";
+import { NETWORK_OPTIONS } from "~/utils/constants";
 
 const route = useRoute();
 const toast = useToast();
@@ -13,8 +15,20 @@ const { walletAddress, connected } = useWalletConnection();
 const isWalletConnected = computed(() => !!walletAddress.value && connected.value);
 const open = ref(false);
 
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
+
+// use mainnet if no network is provided and force URL to update
+if (!route.query.network) {
+  router.push(`${route.path}?network=mainnet`);
+}
+
+if (route.query.network && route.query.network !== network.value) {
+  setNetwork(route.query.network as Network);
+}
+
 const { genesisVault, treasuryAccounts: treasuryAccountsFallback } = await useGenesisVault();
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 
 const multisig = computed(() => useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value).data.value);
 
@@ -24,34 +38,40 @@ watch(() => MULTISIG_QUERY_KEY.value, async (newMultisigQueryKey, oldMultisigQue
   if (newMultisigQueryKey !== oldMultisigQueryKey) {
     console.debug("genesis vault changed. invalidating multisig query data...");
     await refreshMultisig(async () => {
-      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}`));
+      await useAsyncData(newMultisigQueryKey, () => $fetch(`/api/multisigs/${genesisVault.value}?network=${network.value}`));
     });
   }
 });
 
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    refresh();
+    router.push(`/?network=${newNetwork}`);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
+
+
 const multisigAddress = computed(() => multisig.value?.id || "");
 const _ = await useMultisig(multisigAddress);
 
-const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const CURRENT_MULTISIG_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value, network.value));
 
-const treasuryAccounts = computed(() => (useNuxtData<{
-  created_at: string | null;
-  multisig_id: string;
-  name: string;
-  public_key: string;
-  vault_index: number;
-}[]>(CURRENT_MULTISIG_QUERY_KEY.value).data.value!) || treasuryAccountsFallback.value);
+const treasuryAccounts = computed(() => (useNuxtData<IVault[]>(CURRENT_MULTISIG_QUERY_KEY.value).data.value!) || treasuryAccountsFallback.value);
 
 const { TRANSACTIONS_PAGE_QUERY_KEY, transactions } = await useTransactions();
 
 const pendingTransactionsCount = computed(() => transactions.value.filter(tx => tx.proposal?.status.__kind === "Active").length);
-const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury`);
+const isTreasuryActiveRoute = computed(() => route.path === `/squads/${genesisVault.value}/treasury?network=${network.value}`);
 
 const isTreasuryCollapsed = ref(true);
 const links = computed(() => [[{
   label: "Dashboard",
   icon: "i-lucide-layout-dashboard",
-  to: `/squads/${genesisVault.value}/home`,
+  to: `/squads/${genesisVault.value}/home?network=${network.value}`,
   onSelect: () => {
     open.value = false;
   }
@@ -59,7 +79,7 @@ const links = computed(() => [[{
 {
   label: "Transactions",
   icon: "i-lucide-zap",
-  to: `/squads/${genesisVault.value}/transactions`,
+  to: `/squads/${genesisVault.value}/transactions?network=${network.value}`,
   badge: pendingTransactionsCount.value,
   onSelect: () => {
     open.value = false;
@@ -67,7 +87,7 @@ const links = computed(() => [[{
 },
 {
   label: "Members",
-  to: `/squads/${genesisVault.value}/members`,
+  to: `/squads/${genesisVault.value}/members?network=${network.value}`,
   icon: "i-lucide-users",
   onSelect: () => {
     open.value = false;
@@ -76,20 +96,20 @@ const links = computed(() => [[{
 {
   label: "Treasury",
   icon: "i-lucide-wallet-cards",
-  to: `/squads/${genesisVault.value}/treasury`,
+  to: `/squads/${genesisVault.value}/treasury?network=${network.value}`,
   type: "link",
   as: "a",
   class: isTreasuryActiveRoute.value ? `text-(--ui-primary) hover:text-(--ui-primary) before:bg-(--ui-bg-elevated) [&>span.iconify]:text-(--ui-primary)` : undefined,
   onSelect: (e: Event) => {
     e.preventDefault();
     open.value = false;
-    router.push(`/squads/${genesisVault.value}/treasury`);
+    router.push(`/squads/${genesisVault.value}/treasury?network=${network.value}`);
   },
   open: isTreasuryCollapsed.value,
   defaultOpen: true,
   children: treasuryAccounts.value?.map(account => ({
     label: account.name.length > 20 ? `${account.name.slice(0, 20)}...` : account.name,
-    to: `/squads/${genesisVault.value}/treasury/${account.public_key}`,
+    to: `/squads/${genesisVault.value}/treasury/${account.publicKey}?network=${network.value}`,
     icon: "line-md:security",
     onSelect: () => {
       open.value = false;
@@ -176,6 +196,15 @@ onMounted(async () => {
           </template>
 
           <template #default="{ collapsed }">
+
+            <UFormField label="Network" class="w-full mb-2">
+              <USelect
+                v-model="network"
+                :items="networkOptions.map(option => option.value)"
+                placeholder="Select network"
+                class="w-full"
+              />
+            </UFormField>
             <UDashboardSearchButton :collapsed="collapsed" class="bg-transparent ring-(--ui-border)" />
 
             <UNavigationMenu

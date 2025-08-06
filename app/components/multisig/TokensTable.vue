@@ -26,12 +26,13 @@ const route = useRoute();
 
 const vaultAccount = computed(() => route.params.account as string);
 const genesisVault = computed(() => route.params.genesis_vault as string);
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
-const VAULT_BALANCE_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value));
+const { network } = useConnection();
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
+const VAULT_BALANCE_QUERY_KEY = computed(() => keys.tokenBalances(vaultAccount.value, network.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 const multisigAddress = computed(() => multisig.value!.id);
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value, network.value));
 
 const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 const { data } = useNuxtData<FormattedTokenBalanceWithPrice[]>(VAULT_BALANCE_QUERY_KEY.value);

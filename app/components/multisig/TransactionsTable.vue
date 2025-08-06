@@ -22,7 +22,9 @@ const props = defineProps<{
 
 const UButton = resolveComponent("UButton");
 
-const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(props.multisigPda));
+const { network } = useConnection();
+
+const ONCHAIN_MULTISIG_QUERY_KEY = computed(() => keys.onchainMultisig(props.multisigPda, network.value));
 const { data: multisig } = useNuxtData<_multisig.generated.Multisig>(ONCHAIN_MULTISIG_QUERY_KEY.value);
 
 const data = computed(() => props.transactions.map((transaction) => {
@@ -92,7 +94,7 @@ function getVaultTransactionToken(transaction: TransformedTransaction, assetTran
 
   const vaultAccount = transaction.transaction!.message.accountKeys[1]!;
 
-  const { data: vaultBalanceQuery } = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vaultAccount?.toBase58()));
+  const { data: vaultBalanceQuery } = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vaultAccount?.toBase58(), network.value));
   if (vaultBalanceQuery.value) {
     return isSOL ? vaultBalanceQuery.value.find(token => token.symbol === "SOL") : vaultBalanceQuery.value.find(token => token.mint === transaction.__metadata.tokenMint);
   }

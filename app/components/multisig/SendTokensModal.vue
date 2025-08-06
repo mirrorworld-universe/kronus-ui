@@ -33,19 +33,21 @@ defineShortcuts({
 
 // const route = useRoute();
 
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress));
+const { network } = useConnection();
+
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(props.multisigAddress, network.value));
 
 const { data } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 const vaults = computed(() => (data.value || []).map(vault => ({
   label: vault.name,
-  value: vault.public_key,
-  vault_index: vault.vault_index,
+  value: vault.publicKey,
+  vault_index: vault.vaultIndex,
   balance: 0,
 })).sort((a, b) => a.vault_index - b.vault_index));
 
 const sendingItems = computed(() => vaults.value.map((vault) => {
-  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.value))?.data.value || [];
+  const vaultTokens = useNuxtData<FormattedTokenBalanceWithPrice[]>(keys.tokenBalances(vault.value, network.value))?.data.value || [];
   const vaultTokensValue = vaultTokens.reduce((acc, curr) => acc + curr.tokenValue, 0);
   return {
     ...vault,
@@ -74,7 +76,7 @@ const amountHelperText = computed(() => sendingVaultTokenValue.value ? `Balance:
 
 watchEffect(() => {
   (vaults.value || []).forEach((vault) => {
-    useAsyncData(keys.tokenBalances(vault.value), () => $fetch(`/api/balances/${vault.value}`));
+    useAsyncData(keys.tokenBalances(vault.value, network.value), () => $fetch(`/api/balances/${vault.value}`));
   });
 });
 
@@ -225,7 +227,7 @@ async function proposeSendTokenTransaction() {
     if (result) {
       emitter.emit("transactions:refresh");
       console.log("successfully proposed transaction");
-      await router.push(`/squads/${genesisVault.value}/transactions`);
+      await router.push(`/squads/${genesisVault.value}/transactions?network=${network.value}`);
       open.value = false;
     }
   } catch (error: any) {

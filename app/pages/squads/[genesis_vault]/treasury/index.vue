@@ -12,17 +12,19 @@ const wallet = useWallet();
 const route = useRoute();
 
 const genesisVault = computed(() => route.params.genesis_vault as string);
-const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value));
+const { network } = useConnection();
+
+const MULTISIG_QUERY_KEY = computed(() => keys.multisig(genesisVault.value, network.value));
 const { data: multisig } = await useNuxtData<IMultisig>(MULTISIG_QUERY_KEY.value);
 
 const multisigAddress = computed(() => multisig.value!.id);
-const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value));
+const VAULTS_QUERY_KEY = computed(() => keys.vaults(multisigAddress.value, network.value));
 
 const { data: vaults } = useNuxtData<IVault[]>(VAULTS_QUERY_KEY.value);
 
 watchEffect(() => {
   (vaults.value || []).forEach((vault) => {
-    useAsyncData(keys.tokenBalances(vault.public_key), () => $fetch(`/api/balances/${vault.public_key}`));
+    useAsyncData(keys.tokenBalances(vault.publicKey, network.value), () => $fetch(`/api/balances/${vault.publicKey}`));
   });
 });
 </script>

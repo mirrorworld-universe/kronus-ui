@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import * as multisig from "@sqds/multisig";
-import { ref, computed } from "vue";
+import { ref, computed, watch } from "vue";
 import type { StepperItem } from "@nuxt/ui";
 import { useForm, useField } from "vee-validate";
 import { object, string, custom, array, number } from "zod";
@@ -9,8 +9,12 @@ import { PublicKey } from "@solana/web3.js";
 import { useWallet } from "solana-wallets-vue";
 import { types } from "@sqds/multisig";
 import { useWalletConnection } from "~/composables/useWalletConnection";
+import { useConnection } from "~/composables/useConnection";
+import { NETWORK_OPTIONS } from "~/utils/constants";
 
 const { walletAddress } = useWalletConnection();
+const { network, setNetwork } = useConnection();
+const networkOptions = ref(NETWORK_OPTIONS);
 const wallet = useWallet();
 
 const items: StepperItem[] = [
@@ -90,11 +94,21 @@ const { handleSubmit, errors, values } = useForm<FormValues>({
 });
 
 const router = useRouter();
-
+const route = useRoute();
 const { value: name } = useField<string>("name");
 const { value: description } = useField<string>("description");
 const { value: members } = useField<Member[]>("members");
 const { value: threshold } = useField<number>("threshold");
+
+// Watch for network changes and update the connection manager
+watch(network, (newNetwork) => {
+  if (newNetwork) {
+    setNetwork(newNetwork);
+    router.push(`${route.path}?network=${newNetwork}`);
+    // console.log("Network changed to", newNetwork);
+    // console.log("Connection established to", connectionManager.getCurrentConnection().rpcEndpoint);
+  }
+});
 
 const formErrors = computed(() => errors.value as FormErrors);
 const isLoading = ref(false);
@@ -134,7 +148,7 @@ const onSubmit = handleSubmit(async (formValues) => {
       programId: SQUADS_V4_PROGRAM_ID,
     });
 
-    router.push(`/squads/${firstVaultPublicKey.toBase58()}/home`);
+    router.push(`/squads/${firstVaultPublicKey.toBase58()}/home?network=${network.value}`);
 
     toast.add({
       title: "Success!",
@@ -147,7 +161,7 @@ const onSubmit = handleSubmit(async (formValues) => {
         onClick: (e) => {
           e?.stopPropagation();
           navigator.clipboard.writeText(multisigAddress);
-          router.push(`/squads/${firstVaultPublicKey.toBase58()}/treasury`);
+          router.push(`/squads/${firstVaultPublicKey.toBase58()}/treasury?network=${network.value}`);
         }
       },
       {
@@ -258,6 +272,15 @@ const emit = defineEmits(["cancel", "created"]);
                   <span class="text-red-500">{{ formErrors.name }}</span>
                 </template>
               </UInput>
+              <UFormField label="Network" class="w-full">
+              <USelect
+                v-model="network"
+                :items="networkOptions.map(option => option.value)"
+                variant="soft"
+                placeholder="Select network"
+                class="w-full"
+              />
+              </UFormField>
 
               <UFormField label="Multisig description" class="w-full">
                 <UInput
@@ -321,7 +344,7 @@ const emit = defineEmits(["cancel", "created"]);
                         }"
                         class="w-full"
                         :disabled="members[index]?.address === walletAddress"
-                        @update:model-value="value => updateMemberField(index, 'address', value)"
+                        @update:model-value="(value: string) => updateMemberField(index, 'address', value)"
                       >
                         <template v-if="members[index]?.address !== walletAddress" #trailing>
                           <UButton
@@ -342,7 +365,7 @@ const emit = defineEmits(["cancel", "created"]);
                     :model-value="members[index]?.label || ''"
                     placeholder="Optional label"
                     variant="soft"
-                    @update:model-value="value => updateMemberField(index, 'label', value)"
+                    @update:model-value="(value: string) => updateMemberField(index, 'label', value)"
                   />
                 </div>
               </div>

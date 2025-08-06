@@ -1,27 +1,8 @@
-export interface IVault {
-  created_at: string | null;
-  multisig_id: string;
-  name: string;
-  public_key: string;
-  vault_index: number;
-}
+import type { InferSelectModel } from "drizzle-orm";
+import { vaults, multisigs, multisigMembers, } from "~~/server/db/schema";
 
-export interface IMultisig {
-  create_key: string;
-  created_at: string | null;
-  creator: string;
-  description: string | null;
-  first_vault: string;
-  id: string;
-  name: string;
-  public_key: string;
-  threshold: number;
-  updated_at: string | null;
-}
+export type IVault = InferSelectModel<typeof vaults>;
 
-export interface IMember {
-  name?: string;
-  public_key: string;
-  mask: number;
-  roles: MemberRole[];
-}
+export type IMultisig = InferSelectModel<typeof multisigs>;
+
+export type IMultisigMember = InferSelectModel<typeof multisigMembers>;
